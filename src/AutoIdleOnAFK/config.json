@@ -14,5 +14,61 @@
         "github_raw": "https://github.com/RoguedBear/BetterDiscordPlugin-AutoIdleOnAFK/releases/latest/download/AutoIdleOnAFK.plugin.js"
     },
     "changelog": [],
-    "main": "index.js"
+    "main": "index.js",
+    "defaultConfig": [
+        {
+            "type": "radio",
+            "name": "Change Status To:",
+            "note": "the status selected will be switched to when AFK. default: Idle",
+            "id": "desiredStatus",
+            "value": "idle",
+            "options": [
+                {
+                    "name": "Idle",
+                    "value": "idle"
+                },
+                {
+                    "name": "Invisible",
+                    "value": "invisible"
+                }
+            ]
+        },
+        {
+            "type": "slider",
+            "name": "AFK Timeout (minutes)",
+            "id": "afkTimeout",
+            "value": 5,
+            "defaultValue": 5,
+            "min": 5,
+            "max": 30,
+            "units": "min",
+            "markers": [
+                5,
+                10,
+                15,
+                20,
+                25,
+                30
+            ]
+        },
+        {
+            "type": "slider",
+            "name": "online delay",
+            "note": "seconds to wait before changing your status back to Online. if you close or unfocus discord window, status will not be changed",
+            "id": "onlineDelay",
+            "value": 10,
+            "defaultValue": 10,
+            "min": 5,
+            "max": 120,
+            "units": "s",
+            "markers": [
+                5,
+                10,
+                30,
+                60,
+                90,
+                120
+            ]
+        }
+    ]
 }
