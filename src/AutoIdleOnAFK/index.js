@@ -94,6 +94,11 @@ module.exports = (Plugin, Library) => {
                     );
                     if (this.onlineStatusAndNotInVC()) {
                         this.updateStatus(this.settings.afkStatus);
+                        BdApi.saveData(
+                            this._config.info.name,
+                            this.keyIdleSetByPlugin,
+                            true
+                        );
                     }
                 }, this.settings.afkTimeout * 60 * 1000); // converting min to ms
             }
@@ -139,8 +144,7 @@ module.exports = (Plugin, Library) => {
         }
 
         /**
-         * Updates the remote status to the param `toStatus` & sets a key to
-         * true to indicate that afk was set by this plugin
+         * Updates the remote status to the param `toStatus`
          * @param {('online'|'idle'|'invisible')} toStatus
          */
         updateStatus(toStatus) {
@@ -150,12 +154,6 @@ module.exports = (Plugin, Library) => {
             // BdApi.findModuleByProps(
             //     "updateRemoteSettings"
             // ).updateRemoteSettings({ status: toStatus });
-
-            BdApi.saveData(
-                this._config.info.name,
-                this.keyIdleSetByPlugin,
-                true
-            );
         }
     };
 };
