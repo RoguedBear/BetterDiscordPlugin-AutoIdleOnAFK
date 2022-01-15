@@ -15,6 +15,7 @@
     },
     "changelog": [],
     "main": "index.js",
+    "DEBUG": true,
     "defaultConfig": [
         {
             "type": "radio",

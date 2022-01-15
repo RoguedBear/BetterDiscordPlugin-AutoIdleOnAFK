@@ -33,6 +33,16 @@ module.exports = (Plugin, Library) => {
     const {
         SelectedChannelStore: { getVoiceChannelId },
     } = DiscordModules;
+
+    var DEBUG = false;
+    function log_debug(module, ...message) {
+        if (DEBUG !== true) {
+            return;
+        } else {
+            Logger.debug(module, ...message);
+        }
+    }
+
     return class AutoIdleOnAFK extends Plugin {
         constructor() {
             super();
@@ -50,12 +60,13 @@ module.exports = (Plugin, Library) => {
 
         onStart() {
             if (this._config.DEBUG === true) {
-                Logger.debug(this);
+                DEBUG = true;
+                log_debug(this);
                 // TODO: remove these debug statemetns
-                Logger.debug(this.currentStatus());
-                Logger.debug(getVoiceChannelId());
-                Logger.debug(this.inVoiceChannel());
-                Logger.debug(
+                log_debug(this.currentStatus());
+                log_debug(getVoiceChannelId());
+                log_debug(this.inVoiceChannel());
+                log_debug(
                     "onlineStatusAndNotInVC: " + this.onlineStatusAndNotInVC()
                 );
             }
@@ -71,12 +82,12 @@ module.exports = (Plugin, Library) => {
 
         onBlurFunction() {
             // TODO: remove this
-            Logger.debug("Focus lost from discord window");
+            log_debug("Focus lost from discord window");
 
             if (this.onlineStatusAndNotInVC()) {
-                Logger.debug("setting timeout of " + this.settings.afkTimeout);
+                log_debug("setting timeout of " + this.settings.afkTimeout);
                 this.afkTimeoutID = setTimeout(() => {
-                    Logger.debug(
+                    log_debug(
                         "Change status to: '" +
                             this.settings.afkStatus +
                             "' boop."
@@ -90,7 +101,7 @@ module.exports = (Plugin, Library) => {
 
         onFocusFunction() {
             // TODO: remove this
-            Logger.debug("Discord window in focus now");
+            log_debug("Discord window in focus now");
 
             // if user opens discord before the afkTimeout, clear the pending
             // timeout (if it even exists)
