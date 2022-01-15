@@ -148,12 +148,13 @@ module.exports = (Plugin, Library) => {
          * @param {('online'|'idle'|'invisible')} toStatus
          */
         updateStatus(toStatus) {
-            /* TODO: uncomment this later. dont wanna spam status change and
-                    \*possibly* have my account banned
-            */
-            // BdApi.findModuleByProps(
-            //     "updateRemoteSettings"
-            // ).updateRemoteSettings({ status: toStatus });
+            if (this._config.DEBUG === true) {
+                log_debug("Changing (but not changing) status to: " + toStatus);
+                return;
+            }
+            BdApi.findModuleByProps(
+                "updateRemoteSettings"
+            ).updateRemoteSettings({ status: toStatus });
         }
     };
 };
