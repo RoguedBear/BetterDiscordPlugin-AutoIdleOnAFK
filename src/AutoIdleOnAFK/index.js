@@ -29,7 +29,7 @@
  * @returns {typeof globalThis.Plugin}
  */
 module.exports = (Plugin, Library) => {
-    const { DiscordModules } = Library;
+    const { Logger, DiscordModules } = Library;
     const {
         SelectedChannelStore: { getVoiceChannelId },
     } = DiscordModules;
@@ -50,12 +50,12 @@ module.exports = (Plugin, Library) => {
 
         onStart() {
             if (this._config.DEBUG === true) {
-                console.log(this);
+                Logger.debug(this);
                 // TODO: remove these debug statemetns
-                console.log(this.currentStatus());
-                console.log(getVoiceChannelId());
-                console.log(this.inVoiceChannel());
-                console.log(
+                Logger.debug(this.currentStatus());
+                Logger.debug(getVoiceChannelId());
+                Logger.debug(this.inVoiceChannel());
+                Logger.debug(
                     "onlineStatusAndNotInVC: " + this.onlineStatusAndNotInVC()
                 );
             }
@@ -71,12 +71,12 @@ module.exports = (Plugin, Library) => {
 
         onBlurFunction() {
             // TODO: remove this
-            console.log("Focus lost from discord window");
+            Logger.debug("Focus lost from discord window");
 
             if (this.onlineStatusAndNotInVC()) {
-                console.log("setting timeout of " + this.settings.afkTimeout);
+                Logger.debug("setting timeout of " + this.settings.afkTimeout);
                 this.afkTimeoutID = setTimeout(() => {
-                    console.log(
+                    Logger.debug(
                         "Change status to: '" +
                             this.settings.afkStatus +
                             "' boop."
@@ -90,12 +90,12 @@ module.exports = (Plugin, Library) => {
 
         onFocusFunction() {
             // TODO: remove this
-            console.log("Discord window in focus now");
+            Logger.debug("Discord window in focus now");
 
             // if user opens discord before the afkTimeout, clear the pending
             // timeout (if it even exists)
             if (this.afkTimeoutID != undefined) {
-                console.log("Cancelling " + this.afkTimeoutID); // TODO: remove this
+                Logger.debug("Cancelling " + this.afkTimeoutID); // TODO: remove this
                 clearTimeout(this.afkTimeoutID);
                 this.afkTimeoutID = undefined;
             }
