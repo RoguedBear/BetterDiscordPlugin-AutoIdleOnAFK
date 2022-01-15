@@ -40,12 +40,67 @@ module.exports = (Plugin, Library) => {
             this.getSettingsPanel = () => {
                 return this.buildSettingsPanel().getElement();
             };
+
+            // Some instance variables
+            this.afkTimeoutID = undefined;
+            this.keyIdleSetByPlugin = "IdleSetByPlugin";
+            this.OnBlurBounded = this.onBlurFunction.bind(this);
+            this.boundOnFocusBounded = this.onFocusFunction.bind(this);
         }
+
         onStart() {
-            console.log(this);
+            if (this._config.DEBUG === true) {
+                console.log(this);
+                // TODO: remove these debug statemetns
+                console.log(this.currentStatus());
+                console.log(getVoiceChannelId());
+                console.log(this.inVoiceChannel());
+                console.log(
+                    "onlineStatusAndNotInVC: " + this.onlineStatusAndNotInVC()
+                );
+            }
+            window.addEventListener("blur", this.OnBlurBounded);
+            window.addEventListener("focus", this.boundOnFocusBounded);
         }
 
         onStop() {
+            clearTimeout(this.afkTimeoutID);
+            window.removeEventListener("blur", this.OnBlurBounded);
+            window.removeEventListener("focus", this.boundOnFocusBounded);
+        }
+
+        onBlurFunction() {
+            // TODO: remove this
+            console.log("Focus lost from discord window");
+
+            if (this.onlineStatusAndNotInVC()) {
+                console.log("setting timeout of " + this.settings.afkTimeout);
+                this.afkTimeoutID = setTimeout(() => {
+                    console.log(
+                        "Change status to: '" +
+                            this.settings.afkStatus +
+                            "' boop."
+                    );
+                    if (this.onlineStatusAndNotInVC()) {
+                        this.updateStatus(this.settings.afkStatus);
+                    }
+                }, this.settings.afkTimeout * 60 * 1000); // converting min to ms
+            }
+        }
+
+        onFocusFunction() {
+            // TODO: remove this
+            console.log("Discord window in focus now");
+
+            // if user opens discord before the afkTimeout, clear the pending
+            // timeout (if it even exists)
+            if (this.afkTimeoutID != undefined) {
+                console.log("Cancelling " + this.afkTimeoutID); // TODO: remove this
+                clearTimeout(this.afkTimeoutID);
+                this.afkTimeoutID = undefined;
+            }
+        }
+
         /**
          * @returns {string} the current user status
          */
@@ -69,6 +124,26 @@ module.exports = (Plugin, Library) => {
             return (
                 this.currentStatus() === "online" &&
                 this.inVoiceChannel() === false
+            );
+        }
+
+        /**
+         * Updates the remote status to the param `toStatus` & sets a key to
+         * true to indicate that afk was set by this plugin
+         * @param {('online'|'idle'|'invisible')} toStatus
+         */
+        updateStatus(toStatus) {
+            /* TODO: uncomment this later. dont wanna spam status change and
+                    \*possibly* have my account banned
+            */
+            // BdApi.findModuleByProps(
+            //     "updateRemoteSettings"
+            // ).updateRemoteSettings({ status: toStatus });
+
+            BdApi.saveData(
+                this._config.info.name,
+                this.keyIdleSetByPlugin,
+                true
             );
         }
     };
