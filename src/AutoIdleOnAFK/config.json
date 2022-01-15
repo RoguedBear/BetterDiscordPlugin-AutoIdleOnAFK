@@ -16,6 +16,7 @@
     "changelog": [],
     "main": "index.js",
     "DEBUG": false,
+    "DEBUG_ActuallyChangeStatus": false,
     "defaultConfig": [
         {
             "type": "radio",
@@ -57,7 +58,7 @@
             "type": "slider",
             "name": "Back To Online Delay (Grace/Cooldown Period)",
             "note": "seconds to wait before changing your status back to Online. if you close or unfocus discord window, status will not be changed",
-            "id": "onlineDelay",
+            "id": "backToOnlineDelay",
             "defaultValue": 10,
             "value": 10,
             "min": 5,

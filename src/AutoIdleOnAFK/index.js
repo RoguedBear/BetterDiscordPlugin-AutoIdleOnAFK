@@ -52,8 +52,11 @@ module.exports = (Plugin, Library) => {
             };
 
             // Some instance variables
-            this.afkTimeoutID = undefined;
+            this.afkTimeoutID = undefined; // timeout set by onBlur
+            this.backFromAFKTimeoutID = undefined; // timeout set by onFocus
+            // key used as a flag to detect if afk was set by the plugin or manually by user
             this.keyIdleSetByPlugin = "IdleSetByPlugin";
+
             this.OnBlurBounded = this.onBlurFunction.bind(this);
             this.boundOnFocusBounded = this.onFocusFunction.bind(this);
         }
@@ -84,14 +87,15 @@ module.exports = (Plugin, Library) => {
             // TODO: remove this
             log_debug("Focus lost from discord window");
 
+            // if user closes discord before the backToOnlineTimeout, clear the
+            // pending timeout (if it even exists)
+            this.backFromAFKTimeoutID = this.cancelTimeout(
+                this.backFromAFKTimeoutID
+            );
+
             if (this.onlineStatusAndNotInVC()) {
                 log_debug("setting timeout of " + this.settings.afkTimeout);
                 this.afkTimeoutID = setTimeout(() => {
-                    log_debug(
-                        "Change status to: '" +
-                            this.settings.afkStatus +
-                            "' boop."
-                    );
                     if (this.onlineStatusAndNotInVC()) {
                         this.updateStatus(this.settings.afkStatus);
                         BdApi.saveData(
@@ -100,7 +104,8 @@ module.exports = (Plugin, Library) => {
                             true
                         );
                     }
-                }, this.settings.afkTimeout * 60 * 1000); // converting min to ms
+                    // If DEBUG is enabled then keep a shorter duration than 60s
+                }, this.settings.afkTimeout * (DEBUG ? 2 : 60) * 1000); // converting min to ms
             }
         }
 
@@ -110,10 +115,52 @@ module.exports = (Plugin, Library) => {
 
             // if user opens discord before the afkTimeout, clear the pending
             // timeout (if it even exists)
-            if (this.afkTimeoutID != undefined) {
-                Logger.debug("Cancelling " + this.afkTimeoutID); // TODO: remove this
-                clearTimeout(this.afkTimeoutID);
-                this.afkTimeoutID = undefined;
+            this.afkTimeoutID = this.cancelTimeout(this.afkTimeoutID);
+
+            this.backFromAFKTimeoutID = setTimeout(() => {
+                // TODO: Refactor/comment out/test more this part
+                var __afkSetByPlugin = BdApi.loadData(
+                    this._config.info.name,
+                    this.keyIdleSetByPlugin
+                );
+                var statusIsAFKAndWasSetByPlugin =
+                    this.currentStatus() === this.settings.afkStatus &&
+                    __afkSetByPlugin === true;
+
+                if (statusIsAFKAndWasSetByPlugin) {
+                    BdApi.showToast("Changing status back to online in 10s");
+                    this.backFromAFKTimeoutID = setTimeout(() => {
+                        this.updateStatus("online");
+                        BdApi.saveData(
+                            this._config.info.name,
+                            this.keyIdleSetByPlugin,
+                            false
+                        );
+                    }, 10 * 1000);
+                } else if (__afkSetByPlugin == undefined) {
+                    return;
+                } else {
+                    BdApi.deleteData(
+                        this._config.info.name,
+                        this.keyIdleSetByPlugin
+                    );
+                    Logger.info(
+                        "User overrode the status. leaving status unchanged..."
+                    );
+                }
+            }, this.settings.backToOnlineDelay * 1000 - Math.min(this.settings.backToOnlineDelay, 10));
+        }
+
+        /**
+         * Cancles the given timeout id
+         * @param {number} timeoutId
+         * @returns {undefined}
+         */
+        cancelTimeout(timeoutId) {
+            if (timeoutId != undefined) {
+                log_debug("Cancelling " + timeoutId); // TODO: remove this
+                clearTimeout(timeoutId);
+                return undefined;
             }
         }
 
@@ -148,7 +195,10 @@ module.exports = (Plugin, Library) => {
          * @param {('online'|'idle'|'invisible')} toStatus
          */
         updateStatus(toStatus) {
-            if (this._config.DEBUG === true) {
+            if (
+                this._config.DEBUG === true &&
+                this._config.DEBUG_ActuallyChangeStatus === false
+            ) {
                 log_debug("Changing (but not changing) status to: " + toStatus);
                 return;
             }
