@@ -20,7 +20,7 @@
             "type": "radio",
             "name": "Change Status To:",
             "note": "the status selected will be switched to when AFK. default: Idle",
-            "id": "desiredStatus",
+            "id": "afkStatus",
             "value": "idle",
             "options": [
                 {
