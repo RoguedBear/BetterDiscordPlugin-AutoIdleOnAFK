@@ -29,8 +29,10 @@
  * @returns {typeof globalThis.Plugin}
  */
 module.exports = (Plugin, Library) => {
-    const { Patcher } = Library;
-
+    const { DiscordModules } = Library;
+    const {
+        SelectedChannelStore: { getVoiceChannelId },
+    } = DiscordModules;
     return class AutoIdleOnAFK extends Plugin {
         constructor() {
             super();
@@ -44,7 +46,30 @@ module.exports = (Plugin, Library) => {
         }
 
         onStop() {
-            Patcher.unpatchAll();
+        /**
+         * @returns {string} the current user status
+         */
+        currentStatus() {
+            return BdApi.findAllModules((m) => m.default && m.default.status)[0]
+                .default.status;
+        }
+        /**
+         * @returns {boolean} if user is in a VC
+         */
+        inVoiceChannel() {
+            return getVoiceChannelId() !== null;
+        }
+
+        /**
+         * Returns if the current status is 'online' and the user is not in a
+         * voice channel
+         * @returns
+         */
+        onlineStatusAndNotInVC() {
+            return (
+                this.currentStatus() === "online" &&
+                this.inVoiceChannel() === false
+            );
         }
     };
 };
