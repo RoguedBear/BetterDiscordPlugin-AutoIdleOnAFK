@@ -65,10 +65,8 @@ module.exports = (Plugin, Library) => {
             if (this._config.DEBUG === true) {
                 DEBUG = true;
                 log_debug(this);
-                // TODO: remove these debug statemetns
-                log_debug(this.currentStatus());
-                log_debug(getVoiceChannelId());
-                log_debug(this.inVoiceChannel());
+                log_debug("Current status: " + this.currentStatus());
+                log_debug("In Voice Channel: " + this.inVoiceChannel());
                 log_debug(
                     "onlineStatusAndNotInVC: " + this.onlineStatusAndNotInVC()
                 );
@@ -79,6 +77,7 @@ module.exports = (Plugin, Library) => {
 
         onStop() {
             clearTimeout(this.afkTimeoutID);
+            clearTimeout(this.backFromAFKTimeoutID);
             window.removeEventListener("blur", this.OnBlurBounded);
             window.removeEventListener("focus", this.boundOnFocusBounded);
         }
@@ -94,7 +93,9 @@ module.exports = (Plugin, Library) => {
             );
 
             if (this.onlineStatusAndNotInVC()) {
-                log_debug("setting timeout of " + this.settings.afkTimeout);
+                var _timeout_ms =
+                    this.settings.afkTimeout * (DEBUG ? 2 : 60) * 1000;
+                log_debug("setting timeout of " + _timeout_ms + "ms");
                 this.afkTimeoutID = setTimeout(() => {
                     if (this.onlineStatusAndNotInVC()) {
                         this.updateStatus(this.settings.afkStatus);
@@ -105,7 +106,7 @@ module.exports = (Plugin, Library) => {
                         );
                     }
                     // If DEBUG is enabled then keep a shorter duration than 60s
-                }, this.settings.afkTimeout * (DEBUG ? 2 : 60) * 1000); // converting min to ms
+                }, _timeout_ms); // converting min to ms
             }
         }
 
@@ -128,15 +129,13 @@ module.exports = (Plugin, Library) => {
                     __afkSetByPlugin === true;
 
                 if (statusIsAFKAndWasSetByPlugin) {
-                    BdApi.showToast("Changing status back to online in 10s");
-                    this.backFromAFKTimeoutID = setTimeout(() => {
-                        this.updateStatus("online");
-                        BdApi.saveData(
-                            this._config.info.name,
-                            this.keyIdleSetByPlugin,
-                            false
-                        );
-                    }, 10 * 1000);
+                    BdApi.showToast("Changing status back to online");
+                    this.updateStatus("online");
+                    BdApi.saveData(
+                        this._config.info.name,
+                        this.keyIdleSetByPlugin,
+                        false
+                    );
                 } else if (__afkSetByPlugin == undefined) {
                     return;
                 } else {
@@ -148,7 +147,7 @@ module.exports = (Plugin, Library) => {
                         "User overrode the status. leaving status unchanged..."
                     );
                 }
-            }, this.settings.backToOnlineDelay * 1000 - Math.min(this.settings.backToOnlineDelay, 10));
+            }, this.settings.backToOnlineDelay * 1000);
         }
 
         /**
@@ -202,6 +201,7 @@ module.exports = (Plugin, Library) => {
                 log_debug("Changing (but not changing) status to: " + toStatus);
                 return;
             }
+            log_debug("Actually changing status to: " + toStatus);
             BdApi.findModuleByProps(
                 "updateRemoteSettings"
             ).updateRemoteSettings({ status: toStatus });
