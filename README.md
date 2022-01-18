@@ -6,6 +6,8 @@
 > Plugin only works when your status is 'online' and you are not in a voice
 > channel.
 
+![quick video demo](readme_assets/Untitled.mp4)
+
 (This plugin uses rauenzi's
 [BDPluginLibrary](https://github.com/rauenzi/BDPluginLibrary))
 
