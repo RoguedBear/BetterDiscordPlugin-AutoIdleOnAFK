@@ -180,7 +180,7 @@ module.exports = (Plugin, Library) => {
          */
         cancelTimeout(timeoutId) {
             if (timeoutId != undefined) {
-                log_debug("Cancelling " + timeoutId); // TODO: remove this
+                log_debug("Cancelling timeout " + timeoutId); // TODO: remove this
                 clearTimeout(timeoutId);
                 return undefined;
             }
@@ -214,7 +214,7 @@ module.exports = (Plugin, Library) => {
 
         /**
          * Updates the remote status to the param `toStatus`
-         * @param {('online'|'idle'|'invisible')} toStatus
+         * @param {('online'|'idle'|'invisible'|'dnd')} toStatus
          */
         updateStatus(toStatus) {
             if (

@@ -42,6 +42,10 @@
                 {
                     "name": "Invisible",
                     "value": "invisible"
+                },
+                {
+                    "name": "Do Not Disturb",
+                    "value": "dnd"
                 }
             ]
         },
