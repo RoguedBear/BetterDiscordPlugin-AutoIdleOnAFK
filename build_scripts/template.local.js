@@ -1,6 +1,7 @@
 /**
  * @name {{PLUGIN_NAME}}
  * @authorLink {{AUTHOR_LINK}}
+ * @version {{VERSION}}
  * @website {{WEBSITE}}
  * @source {{SOURCE}}
  */

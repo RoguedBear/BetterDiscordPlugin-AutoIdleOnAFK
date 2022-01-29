@@ -51,6 +51,7 @@ for (let f = 0; f < list.length; f++) {
         CONFIG: JSON.stringify(config),
         INNER: content,
         WEBSITE: config.info.github,
+        VERSION: config.info.version,
         SOURCE: config.info.github_raw,
         PATREON: config.info.patreonLink,
         PAYPAL: config.info.paypalLink,
