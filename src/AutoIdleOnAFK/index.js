@@ -122,6 +122,13 @@ module.exports = (Plugin, Library) => {
                 this.backFromAFKTimeoutID
             );
 
+            var __afkSetByPlugin = BdApi.loadData(
+                this._config.info.name,
+                this.keyIdleSetByPlugin
+            );
+            var inVoiceChannelAndIdleSetByPlugin =
+                this.inVoiceChannel() && __afkSetByPlugin;
+
             if (this.onlineStatusAndNotInVC()) {
                 var _timeout_ms =
                     this.settings.afkTimeout * (DEBUG ? 2 : 60) * 1000;
@@ -137,6 +144,21 @@ module.exports = (Plugin, Library) => {
                     }
                     // If DEBUG is enabled then keep a shorter duration than 60s
                 }, _timeout_ms); // converting min to ms
+            } else if (
+                // if the user is in a VC, idle was set by plugin &
+                // their current status == afkStatus
+                inVoiceChannelAndIdleSetByPlugin &&
+                this.currentStatus() == this.settings.afkStatus
+            ) {
+                this.updateStatus("online");
+                BdApi.showToast(
+                    "Changing status back to online, You are in VC"
+                );
+                BdApi.saveData(
+                    this._config.info.name,
+                    this.keyIdleSetByPlugin,
+                    false
+                );
             }
         }
 
