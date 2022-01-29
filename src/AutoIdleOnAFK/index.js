@@ -57,6 +57,13 @@ module.exports = (Plugin, Library) => {
         SelectedChannelStore: { getVoiceChannelId },
     } = DiscordModules;
 
+    const randomStatusModule = BdApi.findAllModules(
+        (m) => m.default && m.default.status
+    )[0];
+    const UpdateRemoteSettingsModule = BdApi.findModuleByProps(
+        "updateRemoteSettings"
+    );
+
     var DEBUG = false;
     function log_debug(module, ...message) {
         if (DEBUG !== true) {
@@ -141,6 +148,11 @@ module.exports = (Plugin, Library) => {
             // timeout (if it even exists)
             this.afkTimeoutID = this.cancelTimeout(this.afkTimeoutID);
 
+            log_debug(
+                "Setting timeout of " +
+                    this.settings.backToOnlineDelay * 1000 +
+                    " ms"
+            );
             this.backFromAFKTimeoutID = setTimeout(() => {
                 // TODO: Refactor/comment out/test more this part
                 var __afkSetByPlugin = BdApi.loadData(
@@ -190,8 +202,7 @@ module.exports = (Plugin, Library) => {
          * @returns {string} the current user status
          */
         currentStatus() {
-            return BdApi.findAllModules((m) => m.default && m.default.status)[0]
-                .default.status;
+            return randomStatusModule.default.status;
         }
         /**
          * @returns {boolean} if user is in a VC
@@ -225,9 +236,9 @@ module.exports = (Plugin, Library) => {
                 return;
             }
             log_debug("Actually changing status to: " + toStatus);
-            BdApi.findModuleByProps(
-                "updateRemoteSettings"
-            ).updateRemoteSettings({ status: toStatus });
+            UpdateRemoteSettingsModule.updateRemoteSettings({
+                status: toStatus,
+            });
         }
     };
 };
