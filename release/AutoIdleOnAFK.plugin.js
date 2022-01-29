@@ -1,6 +1,7 @@
 /**
  * @name AutoIdleOnAFK
  * @authorLink https://github.com/RoguedBear
+ * @version 0.2.0
  * @website https://github.com/RoguedBear/BetterDiscordPlugin-AutoIdleOnAFK
  * @source https://github.com/RoguedBear/BetterDiscordPlugin-AutoIdleOnAFK/releases/latest/download/AutoIdleOnAFK.plugin.js
  */
@@ -29,7 +30,7 @@
 @else@*/
 
 module.exports = (() => {
-    const config = {"info":{"name":"AutoIdleOnAFK","authors":[{"name":"RoguedBear","github_username":"RoguedBear"}],"authorLink":"https://github.com/RoguedBear","version":"0.1.1","description":"Automatically updates your discord status to 'idle' when you haven't opened your discord client for more than 5 minutes.\nPlugin only works when your status is 'online' and you are not in a voice channel. \n\nFor Bugs or Feature Requests open an issue on my Github","github":"https://github.com/RoguedBear/BetterDiscordPlugin-AutoIdleOnAFK","github_raw":"https://github.com/RoguedBear/BetterDiscordPlugin-AutoIdleOnAFK/releases/latest/download/AutoIdleOnAFK.plugin.js"},"changelog":[{"title":"First Release! 🥳","type":"progress","items":["If you have found any bugs or have some feature requests,"," feel free to open an issue on this [plugin's Github]","(https://github.com/RoguedBear/BetterDiscordPlugin-AutoIdleOnAFK/issues)"]}],"main":"index.js","DEBUG":false,"DEBUG_ActuallyChangeStatus":false,"defaultConfig":[{"type":"radio","name":"Change Status To:","note":"the status selected will be switched to when AFK. default: Idle","id":"afkStatus","value":"idle","options":[{"name":"Idle","value":"idle"},{"name":"Invisible","value":"invisible"}]},{"type":"slider","name":"AFK Timeout (minutes)","note":"minutes to wait before changing your status to Idle/Invisible","id":"afkTimeout","value":5,"defaultValue":5,"min":5,"max":30,"units":"min","markers":[5,10,15,20,25,30]},{"type":"slider","name":"Back To Online Delay (Grace/Cooldown Period)","note":"seconds to wait before changing your status back to Online. if you close or unfocus discord window, status will not be changed","id":"backToOnlineDelay","defaultValue":10,"value":10,"min":5,"max":120,"units":"s","markers":[5,10,30,60,90,120]}]};
+    const config = {"info":{"name":"AutoIdleOnAFK","authors":[{"name":"RoguedBear","github_username":"RoguedBear"}],"authorLink":"https://github.com/RoguedBear","version":"0.2.0","description":"Automatically updates your discord status to 'idle' when you haven't opened your discord client for more than 5 minutes.\nPlugin only works when your status is 'online' and you are not in a voice channel. \n\nFor Bugs or Feature Requests open an issue on my Github","github":"https://github.com/RoguedBear/BetterDiscordPlugin-AutoIdleOnAFK","github_raw":"https://github.com/RoguedBear/BetterDiscordPlugin-AutoIdleOnAFK/releases/latest/download/AutoIdleOnAFK.plugin.js"},"changelog":[{"type":"added","title":"What's New?","items":["added `Do Not Disturb` as an AFK status option"]},{"type":"fixed","title":"Fixed","items":["fixed an undocumented bug: Status is changed back to `online` from AFK when you join a VC (and then unfocus discord)"]},{"type":"improved","title":"Improved/optimised","items":["avoid repeated webpack searches by searching & storing the modules on startup"]},{"title":"~~~~~~~~~~~~~~~","type":"progress","items":["If you find any bugs or have some feature requests, feel free to open an issue on this plugin's Github","https://github.com/RoguedBear/BetterDiscordPlugin-AutoIdleOnAFK/issues","(PS: thank you codeSpicer & Windy for beta testing the plugin out 👀)"]}],"main":"index.js","DEBUG":false,"DEBUG_ActuallyChangeStatus":false,"defaultConfig":[{"type":"radio","name":"Change Status To:","note":"the status selected will be switched to when AFK. default: Idle","id":"afkStatus","value":"idle","options":[{"name":"Idle","value":"idle"},{"name":"Invisible","value":"invisible"},{"name":"Do Not Disturb","value":"dnd"}]},{"type":"slider","name":"AFK Timeout (minutes)","note":"minutes to wait before changing your status to Idle/Invisible","id":"afkTimeout","value":5,"defaultValue":5,"min":5,"max":30,"units":"min","markers":[5,10,15,20,25,30]},{"type":"slider","name":"Back To Online Delay (Grace/Cooldown Period)","note":"seconds to wait before changing your status back to Online. if you close or unfocus discord window, status will not be changed","id":"backToOnlineDelay","defaultValue":10,"value":10,"min":5,"max":120,"units":"s","markers":[5,10,30,60,90,120]}]};
 
     return !global.ZeresPluginLibrary ? class {
         constructor() {this._config = config;}
@@ -57,6 +58,13 @@ module.exports = (() => {
     const {
         SelectedChannelStore: { getVoiceChannelId },
     } = DiscordModules;
+
+    const randomStatusModule = BdApi.findAllModules(
+        (m) => m.default && m.default.status
+    )[0];
+    const UpdateRemoteSettingsModule = BdApi.findModuleByProps(
+        "updateRemoteSettings"
+    );
 
     var DEBUG = false;
     function log_debug(module, ...message) {
@@ -116,6 +124,13 @@ module.exports = (() => {
                 this.backFromAFKTimeoutID
             );
 
+            var __afkSetByPlugin = BdApi.loadData(
+                this._config.info.name,
+                this.keyIdleSetByPlugin
+            );
+            var inVoiceChannelAndIdleSetByPlugin =
+                this.inVoiceChannel() && __afkSetByPlugin;
+
             if (this.onlineStatusAndNotInVC()) {
                 var _timeout_ms =
                     this.settings.afkTimeout * (DEBUG ? 2 : 60) * 1000;
@@ -131,6 +146,21 @@ module.exports = (() => {
                     }
                     // If DEBUG is enabled then keep a shorter duration than 60s
                 }, _timeout_ms); // converting min to ms
+            } else if (
+                // if the user is in a VC, idle was set by plugin &
+                // their current status == afkStatus
+                inVoiceChannelAndIdleSetByPlugin &&
+                this.currentStatus() == this.settings.afkStatus
+            ) {
+                this.updateStatus("online");
+                BdApi.showToast(
+                    "Changing status back to online, You are in VC"
+                );
+                BdApi.saveData(
+                    this._config.info.name,
+                    this.keyIdleSetByPlugin,
+                    false
+                );
             }
         }
 
@@ -142,6 +172,11 @@ module.exports = (() => {
             // timeout (if it even exists)
             this.afkTimeoutID = this.cancelTimeout(this.afkTimeoutID);
 
+            log_debug(
+                "Setting timeout of " +
+                    this.settings.backToOnlineDelay * 1000 +
+                    " ms"
+            );
             this.backFromAFKTimeoutID = setTimeout(() => {
                 // TODO: Refactor/comment out/test more this part
                 var __afkSetByPlugin = BdApi.loadData(
@@ -181,7 +216,7 @@ module.exports = (() => {
          */
         cancelTimeout(timeoutId) {
             if (timeoutId != undefined) {
-                log_debug("Cancelling " + timeoutId); // TODO: remove this
+                log_debug("Cancelling timeout " + timeoutId); // TODO: remove this
                 clearTimeout(timeoutId);
                 return undefined;
             }
@@ -191,8 +226,7 @@ module.exports = (() => {
          * @returns {string} the current user status
          */
         currentStatus() {
-            return BdApi.findAllModules((m) => m.default && m.default.status)[0]
-                .default.status;
+            return randomStatusModule.default.status;
         }
         /**
          * @returns {boolean} if user is in a VC
@@ -215,7 +249,7 @@ module.exports = (() => {
 
         /**
          * Updates the remote status to the param `toStatus`
-         * @param {('online'|'idle'|'invisible')} toStatus
+         * @param {('online'|'idle'|'invisible'|'dnd')} toStatus
          */
         updateStatus(toStatus) {
             if (
@@ -226,9 +260,9 @@ module.exports = (() => {
                 return;
             }
             log_debug("Actually changing status to: " + toStatus);
-            BdApi.findModuleByProps(
-                "updateRemoteSettings"
-            ).updateRemoteSettings({ status: toStatus });
+            UpdateRemoteSettingsModule.updateRemoteSettings({
+                status: toStatus,
+            });
         }
     };
 };

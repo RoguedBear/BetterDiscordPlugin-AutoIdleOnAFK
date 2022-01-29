@@ -39,8 +39,9 @@
             "title": "~~~~~~~~~~~~~~~",
             "type": "progress",
             "items": [
-                "If you found any bugs or have some feature requests, feel free to open an issue on this plugin's Github",
-                "https://github.com/RoguedBear/BetterDiscordPlugin-AutoIdleOnAFK/issues"
+                "If you find any bugs or have some feature requests, feel free to open an issue on this plugin's Github",
+                "https://github.com/RoguedBear/BetterDiscordPlugin-AutoIdleOnAFK/issues",
+                "(PS: thank you codeSpicer & Windy for beta testing the plugin out 👀)"
             ]
         }
     ],
