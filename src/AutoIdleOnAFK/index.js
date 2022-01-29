@@ -57,6 +57,13 @@ module.exports = (Plugin, Library) => {
         SelectedChannelStore: { getVoiceChannelId },
     } = DiscordModules;
 
+    const randomStatusModule = BdApi.findAllModules(
+        (m) => m.default && m.default.status
+    )[0];
+    const UpdateRemoteSettingsModule = BdApi.findModuleByProps(
+        "updateRemoteSettings"
+    );
+
     var DEBUG = false;
     function log_debug(module, ...message) {
         if (DEBUG !== true) {
@@ -115,6 +122,13 @@ module.exports = (Plugin, Library) => {
                 this.backFromAFKTimeoutID
             );
 
+            var __afkSetByPlugin = BdApi.loadData(
+                this._config.info.name,
+                this.keyIdleSetByPlugin
+            );
+            var inVoiceChannelAndIdleSetByPlugin =
+                this.inVoiceChannel() && __afkSetByPlugin;
+
             if (this.onlineStatusAndNotInVC()) {
                 var _timeout_ms =
                     this.settings.afkTimeout * (DEBUG ? 2 : 60) * 1000;
@@ -130,6 +144,21 @@ module.exports = (Plugin, Library) => {
                     }
                     // If DEBUG is enabled then keep a shorter duration than 60s
                 }, _timeout_ms); // converting min to ms
+            } else if (
+                // if the user is in a VC, idle was set by plugin &
+                // their current status == afkStatus
+                inVoiceChannelAndIdleSetByPlugin &&
+                this.currentStatus() == this.settings.afkStatus
+            ) {
+                this.updateStatus("online");
+                BdApi.showToast(
+                    "Changing status back to online, You are in VC"
+                );
+                BdApi.saveData(
+                    this._config.info.name,
+                    this.keyIdleSetByPlugin,
+                    false
+                );
             }
         }
 
@@ -141,6 +170,11 @@ module.exports = (Plugin, Library) => {
             // timeout (if it even exists)
             this.afkTimeoutID = this.cancelTimeout(this.afkTimeoutID);
 
+            log_debug(
+                "Setting timeout of " +
+                    this.settings.backToOnlineDelay * 1000 +
+                    " ms"
+            );
             this.backFromAFKTimeoutID = setTimeout(() => {
                 // TODO: Refactor/comment out/test more this part
                 var __afkSetByPlugin = BdApi.loadData(
@@ -180,7 +214,7 @@ module.exports = (Plugin, Library) => {
          */
         cancelTimeout(timeoutId) {
             if (timeoutId != undefined) {
-                log_debug("Cancelling " + timeoutId); // TODO: remove this
+                log_debug("Cancelling timeout " + timeoutId); // TODO: remove this
                 clearTimeout(timeoutId);
                 return undefined;
             }
@@ -190,8 +224,7 @@ module.exports = (Plugin, Library) => {
          * @returns {string} the current user status
          */
         currentStatus() {
-            return BdApi.findAllModules((m) => m.default && m.default.status)[0]
-                .default.status;
+            return randomStatusModule.default.status;
         }
         /**
          * @returns {boolean} if user is in a VC
@@ -214,7 +247,7 @@ module.exports = (Plugin, Library) => {
 
         /**
          * Updates the remote status to the param `toStatus`
-         * @param {('online'|'idle'|'invisible')} toStatus
+         * @param {('online'|'idle'|'invisible'|'dnd')} toStatus
          */
         updateStatus(toStatus) {
             if (
@@ -225,9 +258,9 @@ module.exports = (Plugin, Library) => {
                 return;
             }
             log_debug("Actually changing status to: " + toStatus);
-            BdApi.findModuleByProps(
-                "updateRemoteSettings"
-            ).updateRemoteSettings({ status: toStatus });
+            UpdateRemoteSettingsModule.updateRemoteSettings({
+                status: toStatus,
+            });
         }
     };
 };

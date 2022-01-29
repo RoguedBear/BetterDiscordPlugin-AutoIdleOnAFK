@@ -6,7 +6,7 @@
 > Plugin only works when your status is 'online' and you are not in a voice
 > channel.
 
-https://user-images.githubusercontent.com/39442192/149967246-9eda3256-d5ad-489c-9017-1d17ff8935c1.mp4
+![plugin demo gif](https://github.com/RoguedBear/BetterDiscordPlugin-AutoIdleOnAFK/blob/main/readme_assets/Untitled24FPS.gif?raw=true)
 
 (This plugin uses rauenzi's
 [BDPluginLibrary](https://github.com/rauenzi/BDPluginLibrary))
