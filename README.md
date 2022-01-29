@@ -16,10 +16,12 @@
 - Go to the
   [releases tab](https://github.com/RoguedBear/BetterDiscordPlugin-AutoIdleOnAFK/releases)
   and download `AutoIdleOnAFK.plugin.js` into your BetterDiscord's plugin folder
+- Or download from [BetterDiscord](https://betterdiscord.app/plugin/AutoIdleOnAFK)
 
 ## Customisation:
 
 This is the current settings page:
+
 ![](https://github.com/RoguedBear/BetterDiscordPlugin-AutoIdleOnAFK/blob/main/readme_assets/settings_panel.png?raw=true)
 
 ## Development Notes
