@@ -185,7 +185,19 @@ module.exports = (Plugin, Library) => {
                     this.currentStatus() === this.settings.afkStatus &&
                     __afkSetByPlugin === true;
 
+                var statusIsAFKAndAlwaysOnlineIsTrue =
+                    this.currentStatus() === this.settings.afkStatus &&
+                    this.settings.alwaysOnline === true;
+
                 if (statusIsAFKAndWasSetByPlugin) {
+                    BdApi.showToast("Changing status back to online");
+                    this.updateStatus("online");
+                    BdApi.saveData(
+                        this._config.info.name,
+                        this.keyIdleSetByPlugin,
+                        false
+                    );
+                } else if (statusIsAFKAndAlwaysOnlineIsTrue) {
                     BdApi.showToast("Changing status back to online");
                     this.updateStatus("online");
                     BdApi.saveData(
