@@ -110,6 +110,14 @@
         },
         {
             "type": "switch",
+            "name": "Always Revert To Online",
+            "note": "Come back online even if this plugin didn't change your status. Useful for multiple devices.",
+            "id": "alwaysOnline",
+            "value": false,
+            "defaultValue": false
+        },
+        {
+            "type": "switch",
             "name": "Show toast messages?",
             "note": "toggles the visibility of \"Changing status back to online\" toast message",
             "id": "showToasts",
