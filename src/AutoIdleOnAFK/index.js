@@ -151,9 +151,7 @@ module.exports = (Plugin, Library) => {
                 this.currentStatus() == this.settings.afkStatus
             ) {
                 this.updateStatus("online");
-                BdApi.showToast(
-                    "Changing status back to online, You are in VC"
-                );
+                this.showToast("Changing status back to online, You are in VC");
                 BdApi.saveData(
                     this._config.info.name,
                     this.keyIdleSetByPlugin,
@@ -186,7 +184,7 @@ module.exports = (Plugin, Library) => {
                     __afkSetByPlugin === true;
 
                 if (statusIsAFKAndWasSetByPlugin) {
-                    BdApi.showToast("Changing status back to online");
+                    this.showToast("Changing status back to online");
                     this.updateStatus("online");
                     BdApi.saveData(
                         this._config.info.name,
@@ -261,6 +259,16 @@ module.exports = (Plugin, Library) => {
             UpdateRemoteSettingsModule.updateRemoteSettings({
                 status: toStatus,
             });
+        }
+
+        /**
+         * shows toast message based on showToast settings
+         * @param {string} msg
+         */
+        showToast(msg) {
+            if (this.settings.showToasts) {
+                BdApi.showToast(msg);
+            }
         }
     };
 };

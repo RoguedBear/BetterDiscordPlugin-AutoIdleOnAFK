@@ -107,6 +107,14 @@
                 90,
                 120
             ]
+        },
+        {
+            "type": "switch",
+            "name": "Show toast messages?",
+            "note": "toggles the visibility of \"Changing status back to online\" toast message",
+            "id": "showToasts",
+            "defaultValue": true,
+            "value": true
         }
     ]
 }
