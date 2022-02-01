@@ -129,6 +129,9 @@ module.exports = (Plugin, Library) => {
             var inVoiceChannelAndIdleSetByPlugin =
                 this.inVoiceChannel() && __afkSetByPlugin;
 
+            var inVoiceChannelAndAlwaysOnlineEnabled =
+                this.inVoiceChannel() && this.settings.alwaysOnline;
+
             if (this.onlineStatusAndNotInVC()) {
                 var _timeout_ms =
                     this.settings.afkTimeout * (DEBUG ? 2 : 60) * 1000;
@@ -147,13 +150,13 @@ module.exports = (Plugin, Library) => {
             } else if (
                 // if the user is in a VC, idle was set by plugin &
                 // their current status == afkStatus
-                inVoiceChannelAndIdleSetByPlugin &&
+                (inVoiceChannelAndIdleSetByPlugin ||
+                    // OR, is user in VC and always online is enabled
+                    inVoiceChannelAndAlwaysOnlineEnabled) &&
                 this.currentStatus() == this.settings.afkStatus
             ) {
                 this.updateStatus("online");
-                BdApi.showToast(
-                    "Changing status back to online, You are in VC"
-                );
+                this.showToast("Changing status back to online, You are in VC");
                 BdApi.saveData(
                     this._config.info.name,
                     this.keyIdleSetByPlugin,
@@ -185,7 +188,19 @@ module.exports = (Plugin, Library) => {
                     this.currentStatus() === this.settings.afkStatus &&
                     __afkSetByPlugin === true;
 
+                var statusIsAFKAndAlwaysOnlineIsTrue =
+                    this.currentStatus() === this.settings.afkStatus &&
+                    this.settings.alwaysOnline === true;
+
                 if (statusIsAFKAndWasSetByPlugin) {
+                    this.showToast("Changing status back to online");
+                    this.updateStatus("online");
+                    BdApi.saveData(
+                        this._config.info.name,
+                        this.keyIdleSetByPlugin,
+                        false
+                    );
+                } else if (statusIsAFKAndAlwaysOnlineIsTrue) {
                     BdApi.showToast("Changing status back to online");
                     this.updateStatus("online");
                     BdApi.saveData(
@@ -261,6 +276,16 @@ module.exports = (Plugin, Library) => {
             UpdateRemoteSettingsModule.updateRemoteSettings({
                 status: toStatus,
             });
+        }
+
+        /**
+         * shows toast message based on showToast settings
+         * @param {string} msg
+         */
+        showToast(msg) {
+            if (this.settings.showToasts) {
+                BdApi.showToast(msg);
+            }
         }
     };
 };
