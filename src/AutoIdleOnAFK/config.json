@@ -71,6 +71,14 @@
             ]
         },
         {
+            "type": "switch",
+            "name": "Always Revert To Online",
+            "note": "Come back online even if this plugin didn\'t change your status. Useful for multiple devices.",
+            "id": "alwaysOnline",
+            "value": false,
+            "defaultValue": false
+        },
+        {
             "type": "slider",
             "name": "AFK Timeout (minutes)",
             "note": "minutes to wait before changing your status to Idle/Invisible",
