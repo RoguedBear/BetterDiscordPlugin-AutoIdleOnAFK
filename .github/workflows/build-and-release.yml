@@ -1,0 +1,51 @@
+name: Build plugin, commit & upload to release draft
+
+on:
+  # should only trigger when change is in src directory and on main branch
+  push:
+    paths:
+      - "src/**"
+      - ".github/workflows/build-and-release.yml"
+    branches:
+      - "main"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+        name: Checkout repo
+
+      - name: Setup node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: "npm"
+
+      - name: Build the plugin
+        run: npm run build_plugin
+
+      - name: Commit the built file
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: 🤖 commit the built plugin
+          commit_author:
+            github-actions[bot]
+            <41898282+github-actions[bot]@users.noreply.github.com>
+          commit_user_email: 41898282+github-actions[bot]@users.noreply.github.com
+
+  release:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/')
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+
+      - name: Upload built plugin to release draft
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: release/AutoIdleOnAFK.plugin.js
