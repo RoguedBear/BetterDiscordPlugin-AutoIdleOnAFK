@@ -1,7 +1,11 @@
 /**
  * @name AutoIdleOnAFK
- * @authorLink https://github.com/RoguedBear
- * @version 0.3.0
+ * @description Automatically updates your discord status to 'idle' when you haven't opened your discord client for more than 5 minutes.
+Plugin only works when your status is 'online' and you are not in a voice channel. 
+
+For Bugs or Feature Requests open an issue on my Github
+ * @version 0.3.1
+ * @author RoguedBear
  * @website https://github.com/RoguedBear/BetterDiscordPlugin-AutoIdleOnAFK
  * @source https://github.com/RoguedBear/BetterDiscordPlugin-AutoIdleOnAFK/releases/latest/download/AutoIdleOnAFK.plugin.js
  */
@@ -28,43 +32,36 @@
     WScript.Quit();
 
 @else@*/
-
-module.exports = (() => {
-    const config = {"info":{"name":"AutoIdleOnAFK","authors":[{"name":"RoguedBear","github_username":"RoguedBear"}],"authorLink":"https://github.com/RoguedBear","version":"0.3.0","description":"Automatically updates your discord status to 'idle' when you haven't opened your discord client for more than 5 minutes.\nPlugin only works when your status is 'online' and you are not in a voice channel. \n\nFor Bugs or Feature Requests open an issue on my Github","github":"https://github.com/RoguedBear/BetterDiscordPlugin-AutoIdleOnAFK","github_raw":"https://github.com/RoguedBear/BetterDiscordPlugin-AutoIdleOnAFK/releases/latest/download/AutoIdleOnAFK.plugin.js"},"changelog":[{"type":"added","title":"What's New?","items":["A settings toggle that changes status from AFK to `online` even if this plugin didn't make the change. Useful for multiple devices. *[Disabled by default]* \n(thanks Bobbyl140!)","A settings toggle to disable toast notification `\"Changing status back to online\"`. \n*[notifications Enabled by default]*"]},{"title":"~~~~~~~~~~~~~~~","type":"progress","items":["If you find any bugs or have some feature requests, feel free to open an issue on this plugin's Github","https://github.com/RoguedBear/BetterDiscordPlugin-AutoIdleOnAFK/issues"]}],"main":"index.js","DEBUG":false,"DEBUG_ActuallyChangeStatus":false,"defaultConfig":[{"type":"radio","name":"Change Status To:","note":"the status selected will be switched to when AFK. default: Idle","id":"afkStatus","value":"idle","options":[{"name":"Idle","value":"idle"},{"name":"Invisible","value":"invisible"},{"name":"Do Not Disturb","value":"dnd"}]},{"type":"slider","name":"AFK Timeout (minutes)","note":"minutes to wait before changing your status to Idle/Invisible","id":"afkTimeout","value":5,"defaultValue":5,"min":5,"max":30,"units":"min","markers":[5,10,15,20,25,30]},{"type":"slider","name":"Back To Online Delay (Grace/Cooldown Period)","note":"seconds to wait before changing your status back to Online. if you close or unfocus discord window, status will not be changed","id":"backToOnlineDelay","defaultValue":10,"value":10,"min":5,"max":120,"units":"s","markers":[5,10,30,60,90,120]},{"type":"switch","name":"Always Revert To Online","note":"Come back online even if this plugin didn't change your status. Useful for multiple devices.","id":"alwaysOnline","value":false,"defaultValue":false},{"type":"switch","name":"Show toast messages?","note":"toggles the visibility of \"Changing status back to online\" toast message","id":"showToasts","defaultValue":true,"value":true}]};
-
-    return !global.ZeresPluginLibrary ? class {
-        constructor() {this._config = config;}
-        getName() {return config.info.name;}
-        getAuthor() {return config.info.authors.map(a => a.name).join(", ");}
-        getDescription() {return config.info.description;}
-        getVersion() {return config.info.version;}
-        load() {
-            BdApi.showConfirmationModal("Library Missing", `The library plugin needed for ${config.info.name} is missing. Please click Download Now to install it.`, {
-                confirmText: "Download Now",
-                cancelText: "Cancel",
-                onConfirm: () => {
-                    require("request").get("https://rauenzi.github.io/BDPluginLibrary/release/0PluginLibrary.plugin.js", async (error, response, body) => {
-                        if (error) return require("electron").shell.openExternal("https://betterdiscord.net/ghdl?url=https://raw.githubusercontent.com/rauenzi/BDPluginLibrary/master/release/0PluginLibrary.plugin.js");
-                        await new Promise(r => require("fs").writeFile(require("path").join(BdApi.Plugins.folder, "0PluginLibrary.plugin.js"), body, r));
-                    });
-                }
+const config = {"info":{"name":"AutoIdleOnAFK","authors":[{"name":"RoguedBear","github_username":"RoguedBear"}],"authorLink":"https://github.com/RoguedBear","version":"0.3.1","description":"Automatically updates your discord status to 'idle' when you haven't opened your discord client for more than 5 minutes.\nPlugin only works when your status is 'online' and you are not in a voice channel. \n\nFor Bugs or Feature Requests open an issue on my Github","github":"https://github.com/RoguedBear/BetterDiscordPlugin-AutoIdleOnAFK","github_raw":"https://github.com/RoguedBear/BetterDiscordPlugin-AutoIdleOnAFK/releases/latest/download/AutoIdleOnAFK.plugin.js"},"changelog":[{"type":"fixed","title":"Fixed the plugin :)","items":["Fixed what discord broke in recent update. (thanks `Zerthox` for helping me find the new module to use!)"]}],"main":"index.js","DEBUG":false,"DEBUG_ActuallyChangeStatus":false,"defaultConfig":[{"type":"radio","name":"Change Status To:","note":"the status selected will be switched to when AFK. default: Idle","id":"afkStatus","value":"idle","options":[{"name":"Idle","value":"idle"},{"name":"Invisible","value":"invisible"},{"name":"Do Not Disturb","value":"dnd"}]},{"type":"slider","name":"AFK Timeout (minutes)","note":"minutes to wait before changing your status to Idle/Invisible","id":"afkTimeout","value":5,"defaultValue":5,"min":5,"max":30,"units":"min","markers":[5,10,15,20,25,30]},{"type":"slider","name":"Back To Online Delay (Grace/Cooldown Period)","note":"seconds to wait before changing your status back to Online. if you close or unfocus discord window, status will not be changed","id":"backToOnlineDelay","defaultValue":10,"value":10,"min":5,"max":120,"units":"s","markers":[5,10,30,60,90,120]},{"type":"switch","name":"Always Revert To Online","note":"Come back online even if this plugin didn't change your status. Useful for multiple devices.","id":"alwaysOnline","value":false,"defaultValue":false},{"type":"switch","name":"Show toast messages?","note":"toggles the visibility of \"Changing status back to online\" toast message","id":"showToasts","defaultValue":true,"value":true}]};
+class Dummy {
+    constructor() {this._config = config;}
+    start() {}
+    stop() {}
+}
+ 
+if (!global.ZeresPluginLibrary) {
+    BdApi.showConfirmationModal("Library Missing", `The library plugin needed for ${config.info.name} is missing. Please click Download Now to install it.`, {
+        confirmText: "Download Now",
+        cancelText: "Cancel",
+        onConfirm: () => {
+            require("request").get("https://rauenzi.github.io/BDPluginLibrary/release/0PluginLibrary.plugin.js", async (error, response, body) => {
+                if (error) return require("electron").shell.openExternal("https://betterdiscord.app/Download?id=9");
+                await new Promise(r => require("fs").writeFile(require("path").join(BdApi.Plugins.folder, "0PluginLibrary.plugin.js"), body, r));
             });
         }
-        start() {}
-        stop() {}
-    } : (([Plugin, Api]) => {
-        const plugin = (Plugin, Library) => {
+    });
+}
+ 
+module.exports = !global.ZeresPluginLibrary ? Dummy : (([Plugin, Api]) => {
+     const plugin = (Plugin, Library) => {
     const { Logger, DiscordModules } = Library;
     const {
         SelectedChannelStore: { getVoiceChannelId },
     } = DiscordModules;
 
-    const randomStatusModule = BdApi.findAllModules(
-        (m) => m.default && m.default.status
-    )[0];
-    const UpdateRemoteSettingsModule = BdApi.findModuleByProps(
-        "updateRemoteSettings"
-    );
+    // Logger.info("VC: " + getVoiceChannelId());
+    const StatusSetting =
+        BdApi.findModuleByProps("StatusSetting").StatusSetting;
 
     var DEBUG = false;
     function log_debug(module, ...message) {
@@ -241,7 +238,7 @@ module.exports = (() => {
          * @returns {string} the current user status
          */
         currentStatus() {
-            return randomStatusModule.default.status;
+            return StatusSetting.getSetting();
         }
         /**
          * @returns {boolean} if user is in a VC
@@ -275,9 +272,7 @@ module.exports = (() => {
                 return;
             }
             log_debug("Actually changing status to: " + toStatus);
-            UpdateRemoteSettingsModule.updateRemoteSettings({
-                status: toStatus,
-            });
+            StatusSetting.updateSetting(toStatus);
         }
 
         /**
@@ -291,8 +286,6 @@ module.exports = (() => {
         }
     };
 };
-        return plugin(Plugin, Api);
-    })(global.ZeresPluginLibrary.buildPlugin(config));
-})();
-
+     return plugin(Plugin, Api);
+})(global.ZeresPluginLibrary.buildPlugin(config));
 /*@end@*/
