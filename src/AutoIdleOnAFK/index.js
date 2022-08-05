@@ -58,13 +58,8 @@ module.exports = (Plugin, Library) => {
     } = DiscordModules;
 
     // Logger.info("VC: " + getVoiceChannelId());
-    const randomStatusModule = BdApi.findModuleByProps(
-        "getStatus",
-        "getLocalPresence"
-    );
-    const UpdateRemoteSettingsModule = BdApi.findModuleByProps(
-        "updateRemoteSettings"
-    );
+    const StatusSetting =
+        BdApi.findModuleByProps("StatusSetting").StatusSetting;
 
     var DEBUG = false;
     function log_debug(module, ...message) {
@@ -241,7 +236,7 @@ module.exports = (Plugin, Library) => {
          * @returns {string} the current user status
          */
         currentStatus() {
-            return randomStatusModule.getStatus();
+            return StatusSetting.getSetting();
         }
         /**
          * @returns {boolean} if user is in a VC
@@ -275,9 +270,7 @@ module.exports = (Plugin, Library) => {
                 return;
             }
             log_debug("Actually changing status to: " + toStatus);
-            UpdateRemoteSettingsModule.updateRemoteSettings({
-                status: toStatus,
-            });
+            StatusSetting.updateSetting(toStatus);
         }
 
         /**
