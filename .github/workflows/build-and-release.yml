@@ -8,6 +8,8 @@ on:
       - ".github/workflows/build-and-release.yml"
     branches:
       - "main"
+  release:
+    types: [published, created]
 
 jobs:
   build:
