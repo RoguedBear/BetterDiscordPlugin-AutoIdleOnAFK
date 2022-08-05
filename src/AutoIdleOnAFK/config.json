@@ -8,7 +8,7 @@
             }
         ],
         "authorLink": "https://github.com/RoguedBear",
-        "version": "0.3.0",
+        "version": "0.3.1",
         "description": "Automatically updates your discord status to 'idle' when you haven't opened your discord client for more than 5 minutes.\nPlugin only works when your status is 'online' and you are not in a voice channel. \n\nFor Bugs or Feature Requests open an issue on my Github",
         "github": "https://github.com/RoguedBear/BetterDiscordPlugin-AutoIdleOnAFK",
         "github_raw": "https://github.com/RoguedBear/BetterDiscordPlugin-AutoIdleOnAFK/releases/latest/download/AutoIdleOnAFK.plugin.js"
