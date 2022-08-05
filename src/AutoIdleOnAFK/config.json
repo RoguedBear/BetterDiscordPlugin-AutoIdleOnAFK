@@ -8,26 +8,17 @@
             }
         ],
         "authorLink": "https://github.com/RoguedBear",
-        "version": "0.3.0",
+        "version": "0.3.1",
         "description": "Automatically updates your discord status to 'idle' when you haven't opened your discord client for more than 5 minutes.\nPlugin only works when your status is 'online' and you are not in a voice channel. \n\nFor Bugs or Feature Requests open an issue on my Github",
         "github": "https://github.com/RoguedBear/BetterDiscordPlugin-AutoIdleOnAFK",
         "github_raw": "https://github.com/RoguedBear/BetterDiscordPlugin-AutoIdleOnAFK/releases/latest/download/AutoIdleOnAFK.plugin.js"
     },
     "changelog": [
         {
-            "type": "added",
-            "title": "What's New?",
+            "type": "fixed",
+            "title": "Fixed the plugin :)",
             "items": [
-                "A settings toggle that changes status from AFK to `online` even if this plugin didn't make the change. Useful for multiple devices. *[Disabled by default]* \n(thanks Bobbyl140!)",
-                "A settings toggle to disable toast notification `\"Changing status back to online\"`. \n*[notifications Enabled by default]*"
-            ]
-        },
-        {
-            "title": "~~~~~~~~~~~~~~~",
-            "type": "progress",
-            "items": [
-                "If you find any bugs or have some feature requests, feel free to open an issue on this plugin's Github",
-                "https://github.com/RoguedBear/BetterDiscordPlugin-AutoIdleOnAFK/issues"
+                "Fixed what discord broke in recent update. (thanks `Zerthox` for helping me find the new module to use!)"
             ]
         }
     ],

@@ -5,7 +5,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "__comment__": "adapted from rauenzi/BDPluginLibrary",
-    "build_plugin": "node ./build_scripts/build.js local"
+    "build_plugin": "node ./build_scripts/build.js"
   },
   "repository": {
     "type": "git",
