@@ -57,9 +57,11 @@ module.exports = (Plugin, Library) => {
         SelectedChannelStore: { getVoiceChannelId },
     } = DiscordModules;
 
-    const randomStatusModule = BdApi.findAllModules(
-        (m) => m.default && m.default.status
-    )[0];
+    // Logger.info("VC: " + getVoiceChannelId());
+    const randomStatusModule = BdApi.findModuleByProps(
+        "getStatus",
+        "getLocalPresence"
+    );
     const UpdateRemoteSettingsModule = BdApi.findModuleByProps(
         "updateRemoteSettings"
     );
@@ -239,7 +241,7 @@ module.exports = (Plugin, Library) => {
          * @returns {string} the current user status
          */
         currentStatus() {
-            return randomStatusModule.default.status;
+            return randomStatusModule.getStatus();
         }
         /**
          * @returns {boolean} if user is in a VC
