@@ -5,66 +5,78 @@
             {
                 "name": "RoguedBear",
                 "github_username": "RoguedBear",
-                "link": "https://github.com/RoguedBear"
+                "link": "test"
             }
         ],
-        "version": "0.3.1",
+        "version": "0.3.2",
         "description": "Automatically updates your discord status to 'idle' when you haven't opened your discord client for more than 5 minutes.\nPlugin only works when your status is 'online' and you are not in a voice channel. \n\nFor Bugs or Feature Requests open an issue on my Github",
         "github": "https://github.com/RoguedBear/BetterDiscordPlugin-AutoIdleOnAFK",
         "github_raw": "https://github.com/RoguedBear/BetterDiscordPlugin-AutoIdleOnAFK/releases/latest/download/AutoIdleOnAFK.plugin.js"
     },
-    "changelog": [
+    "changelog":
+        [{
+            "type": "added",
+            "title": "What's New?",
+            "items":
+                ["Now you can choose if the plugin will change your status only from \"Online\" or from all the status.\n*[default: only from \"Online\"]*",
+                    "Updated time limits, now they are from ~~5 minutes~~ **1 minute** to ~~30 minutes~~ **12 hours**.\n*[default: 5 minutes]*",
+                    "Now you can choose the status for when you come back to your pc.\n*[default: \"Online\"]*"]
+        },
         {
-            "type": "fixed",
-            "title": "Fixed the plugin :)",
-            "items": [
-                "Fixed what discord broke in recent update. (thanks `Zerthox` for helping me find the new module to use!)"
-            ]
-        }
-    ],
+            "title": "Fixed issues",
+            "type": "progress",
+            "items":
+                ["Now the plugin will correctly save the settings.",
+                    "Now your status will correctly set as \"Online\"."]
+            }
+            ,{
+                "title": "Removed:",
+                "type": "fixed",
+                "items":
+                    ["You can no longer set \"Invisible\" as status to set when you are back."]
+            },{
+                "type": "added",
+                "title": "Credits:",
+                "items":
+                    ["All these features have been added by Haxurus."]
+            }
+        ],
     "main": "index.js",
     "DEBUG": false,
     "DEBUG_ActuallyChangeStatus": false,
-    "defaultConfig": [
-        {
+    "defaultConfig":
+        [{
             "type": "radio",
             "name": "Change Status To:",
             "note": "the status selected will be switched to when AFK. default: Idle",
             "id": "afkStatus",
             "value": "idle",
-            "options": [
-                {
-                    "name": "Idle",
-                    "value": "idle"
-                },
-                {
-                    "name": "Invisible",
-                    "value": "invisible"
-                },
-                {
-                    "name": "Do Not Disturb",
-                    "value": "dnd"
-                }
-            ]
+            "options":
+                [{ "name": "Idle", "value": "idle" },
+                { "name": "Invisible", "value": "invisible" },
+                { "name": "Do Not Disturb", "value": "dnd" }]
         },
         {
             "type": "slider",
-            "name": "AFK Timeout (minutes)",
-            "note": "minutes to wait before changing your status to Idle/Invisible",
-            "id": "afkTimeout",
-            "value": 5,
+            "name": "AFK Timeout (minutes)", "note": "minutes to wait before changing your status to Idle/Invisible",
+            "id": "afkTimeoutMin",
+            "value": 1,
             "defaultValue": 5,
-            "min": 5,
+            "min": 1,
             "max": 30,
             "units": "min",
-            "markers": [
-                5,
-                10,
-                15,
-                20,
-                25,
-                30
-            ]
+            "markers": [1, 5, 10, 15, 20, 25, 30]
+        },
+        {
+            "type": "slider",
+            "name": "AFK Timeout (minutes)", "note": "hours to wait before changing your status to Idle/Invisible",
+            "id": "afkTimeoutH",
+            "value": 0,
+            "defaultValue": 0,
+            "min": 0,
+            "max": 12,
+            "units": "h",
+            "markers": [0, 1, 2, 6, 12]
         },
         {
             "type": "slider",
@@ -76,14 +88,7 @@
             "min": 5,
             "max": 120,
             "units": "s",
-            "markers": [
-                5,
-                10,
-                30,
-                60,
-                90,
-                120
-            ]
+            "markers": [5, 10, 30, 60, 90, 120]
         },
         {
             "type": "switch",
@@ -100,6 +105,25 @@
             "id": "showToasts",
             "defaultValue": true,
             "value": true
+        },
+        {
+            "type": "switch",
+            "name": "Change status only from \"Online\"?",
+            "note": "change your status only if you are actually \"Online\"",
+            "id": "onlyOnline",
+            "defaultValue": true,
+            "value": true
+        },
+        {
+            "type": "radio",
+            "name": "When you return, set status to:",
+            "note": "the status selected will be switched to when you will be back. default: Online",
+            "id": "goBackStatus",
+            "value": "online",
+            "options":
+                [{ "name": "Online", "value": "online" },
+                { "name": "Idle", "value": "idle" },
+                { "name": "Do Not Disturb", "value": "dnd" }]
         }
     ]
 }
