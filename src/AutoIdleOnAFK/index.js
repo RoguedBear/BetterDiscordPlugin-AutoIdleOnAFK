@@ -94,9 +94,7 @@ module.exports = (Plugin, Library) => {
                 log_debug(this);
                 log_debug("Current status: " + this.currentStatus());
                 log_debug("In Voice Channel: " + this.inVoiceChannel());
-                log_debug(
-                    "onlineStatusAndNotInVC: " + this.onlineStatusAndNotInVC()
-                );
+                log_debug("onlineStatusAndNotInVC: " + this.onlineStatusAndNotInVC());
             }
             window.addEventListener("blur", this.OnBlurBounded);
             window.addEventListener("focus", this.boundOnFocusBounded);
@@ -131,7 +129,7 @@ module.exports = (Plugin, Library) => {
 
             if (this.onlineStatusAndNotInVC()) {
                 var _timeout_ms =
-                    this.settings.afkTimeout * (DEBUG ? 2 : 60) * 1000;
+                    this.settings.afkTimeoutMin * (DEBUG ? 2 : 60) * 1000 + this.settings.afkTimeoutH * (DEBUG ? 2 : 60) * 1000 * 60;
                 log_debug("setting timeout of " + _timeout_ms + "ms");
                 this.afkTimeoutID = setTimeout(() => {
                     if (this.onlineStatusAndNotInVC()) {
@@ -190,16 +188,16 @@ module.exports = (Plugin, Library) => {
                     this.settings.alwaysOnline === true;
 
                 if (statusIsAFKAndWasSetByPlugin) {
-                    this.showToast("Changing status back to online");
-                    this.updateStatus("online");
+                    this.showToast("Changing status back to " + this.settings.goBackStatus);
+                    this.updateStatus(this.settings.goBackStatus);
                     BdApi.saveData(
                         this._config.info.name,
                         this.keyIdleSetByPlugin,
                         false
                     );
                 } else if (statusIsAFKAndAlwaysOnlineIsTrue) {
-                    BdApi.showToast("Changing status back to online");
-                    this.updateStatus("online");
+                    BdApi.showToast("Changing status back to " + this.settings.goBackStatus);
+                    this.updateStatus(this.settings.goBackStatus);
                     BdApi.saveData(
                         this._config.info.name,
                         this.keyIdleSetByPlugin,
@@ -251,8 +249,13 @@ module.exports = (Plugin, Library) => {
          * @returns
          */
         onlineStatusAndNotInVC() {
+            if (this.settings.onlyOnline) {
+                return (
+                    this.currentStatus() === "online" &&
+                    this.inVoiceChannel() === false
+                );
+            }
             return (
-                this.currentStatus() === "online" &&
                 this.inVoiceChannel() === false
             );
         }
