@@ -1,15 +1,13 @@
 # AutoIdleOnAFK ![](https://github.com/RoguedBear/BetterDiscordPlugin-AutoIdleOnAFK/blob/main/readme_assets/idle.svg?raw=true)
 
 > Automatically updates your discord status to 'idle' when you haven't opened
-> your discord client for more than 5 minutes.
->
-> Plugin only works when your status is 'online' and you are not in a voice
-> channel.
+> your discord client for more than 1 minutes. Plugin only works when you are not in a voice channel.
+
+</br>
 
 ![plugin demo gif](https://github.com/RoguedBear/BetterDiscordPlugin-AutoIdleOnAFK/blob/main/readme_assets/Untitled24FPS.gif?raw=true)
 
-(This plugin uses rauenzi's
-[BDPluginLibrary](https://github.com/rauenzi/BDPluginLibrary))
+</br>
 
 ## Installation
 
@@ -18,11 +16,17 @@
   and download `AutoIdleOnAFK.plugin.js` into your BetterDiscord's plugin folder
 - Or download from [BetterDiscord](https://betterdiscord.app/plugin/AutoIdleOnAFK)
 
+</br>
+
 ## Customisation:
 
 This is the current settings page:
 
+</br>
+
 ![](https://github.com/RoguedBear/BetterDiscordPlugin-AutoIdleOnAFK/blob/main/readme_assets/settings_panel.png?raw=true)
+
+</br>
 
 ## Development Notes
 
@@ -31,6 +35,8 @@ This is the current settings page:
   source code. These scripts have been taken from rauenzi's BDPluginLibrary. You
   can find them and their usage instructions
   [here](https://github.com/rauenzi/BDPluginLibrary#building-plugins)
+
+</br>
 
 ## Acknowledgements / References
 
@@ -46,6 +52,11 @@ reference from the following plugins:
 - QWERxD's
   [CallTimeCounter](https://github.com/QWERTxD/BetterDiscordPlugins/tree/main/CallTimeCounter) -
   to get if user is currently in a VC.
+
+<b>IMPORTANT:</b> This plugin uses rauenzi's
+[BDPluginLibrary](https://github.com/rauenzi/BDPluginLibrary))
+
+</br>
 
 ## License
 
