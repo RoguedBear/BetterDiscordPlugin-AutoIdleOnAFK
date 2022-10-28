@@ -35,7 +35,7 @@ jobs:
       - name: generate plugin hash
         run: |
           cd release/
-          sha256 AutoIdleOnAFK.plugin.js > AutoIdleOnAFK.plugin.js.sha256
+          sha256sum AutoIdleOnAFK.plugin.js > AutoIdleOnAFK.plugin.js.sha256
 
       - name: Commit the built file
         uses: stefanzweifel/git-auto-commit-action@v4
