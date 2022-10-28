@@ -58,8 +58,27 @@ module.exports = (Plugin, Library) => {
     } = DiscordModules;
 
     // Logger.info("VC: " + getVoiceChannelId());
-    const StatusSetting =
-        BdApi.findModuleByProps("StatusSetting").StatusSetting;
+
+    const {
+        Webpack,
+        Webpack: { Filters },
+    } = BdApi;
+
+    const UserSettingsProtoStore = BdApi.Webpack.getModule(
+        (m) =>
+            m &&
+            typeof m.getName == "function" &&
+            m.getName() == "UserSettingsProtoStore" &&
+            m,
+        { first: true, searchExports: true }
+    );
+
+    const UserSettingsProtoUtils = BdApi.Webpack.getModule(
+        (m) =>
+            m.ProtoClass &&
+            m.ProtoClass.typeName.endsWith(".PreloadedUserSettings"),
+        { first: true, searchExports: true }
+    );
 
     var DEBUG = false;
     function log_debug(module, ...message) {
@@ -236,7 +255,7 @@ module.exports = (Plugin, Library) => {
          * @returns {string} the current user status
          */
         currentStatus() {
-            return StatusSetting.getSetting();
+            return UserSettingsProtoStore.settings.status.status.value;
         }
         /**
          * @returns {boolean} if user is in a VC
@@ -270,7 +289,14 @@ module.exports = (Plugin, Library) => {
                 return;
             }
             log_debug("Actually changing status to: " + toStatus);
-            StatusSetting.updateSetting(toStatus);
+            UserSettingsProtoUtils.updateAsync(
+                "status",
+                (statusSetting) => {
+                    log_debug(statusSetting);
+                    statusSetting.status.value = toStatus;
+                },
+                0
+            );
         }
 
         /**
