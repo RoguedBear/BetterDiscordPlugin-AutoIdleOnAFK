@@ -10,6 +10,7 @@ on:
       - "main"
   release:
     types: [published, created]
+  workflow_dispatch:
 
 jobs:
   build:
@@ -25,8 +26,16 @@ jobs:
           node-version: 16
           cache: "npm"
 
+      - name: install dependencies
+        run: npm install
+
       - name: Build the plugin
-        run: npm run build_plugin
+        run: npm run build
+
+      - name: generate plugin hash
+        run: |
+          cd release/
+          sha256 AutoIdleOnAFK.plugin.js > AutoIdleOnAFK.plugin.js.sha256
 
       - name: Commit the built file
         uses: stefanzweifel/git-auto-commit-action@v4
@@ -44,10 +53,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Upload built plugin to release draft
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: release/AutoIdleOnAFK.plugin.js
+          files: |
+            release/AutoIdleOnAFK.plugin.js
+            release/AutoIdleOnAFK.plugin.js.sha256
