@@ -261,7 +261,10 @@ module.exports = (Plugin, Library) => {
          * @returns {boolean} if user is in a VC
          */
         inVoiceChannel() {
-            return getVoiceChannelId() !== null;
+            return (
+                this.settings.ignoreVCState === false &&
+                getVoiceChannelId() !== null
+            );
         }
 
         /**
