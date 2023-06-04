@@ -1,6 +1,6 @@
 {
   "name": "betterdiscordplugin-autoidleonafk",
-  "version": "0.3.2",
+  "version": "0.4.0",
   "description": "Automatically updates your discord status to 'idle' when you haven't opened your discord client for more than 5 minutes",
   "scripts": {
     "build": "zpl build AutoIdleOnAFK"
