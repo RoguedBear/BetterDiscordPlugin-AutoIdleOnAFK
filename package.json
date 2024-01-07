@@ -3,7 +3,8 @@
   "version": "0.4.0",
   "description": "Automatically updates your discord status to 'idle' when you haven't opened your discord client for more than 5 minutes",
   "scripts": {
-    "build": "zpl build AutoIdleOnAFK"
+    "build": "webpack --progress --color",
+    "rollup": "rollup --config",
   },
   "repository": {
     "type": "git",
@@ -26,7 +27,20 @@
     "afk"
   ],
   "dependencies": {
-    "@types/bandagedbd__bdapi": "^0.3.4",
+    "@types/betterdiscord": "github:zerthox/betterdiscord-types",
     "zerespluginlibrary": "^2.0.6"
+  },
+  "devDependencies": {
+    "@rollup/plugin-json": "^6.1.0",
+    "@rollup/plugin-sucrase": "^5.0.2",
+    "@rollup/plugin-typescript": "^11.1.5",
+    "@tsconfig/recommended": "^1.0.3",
+    "rollup": "^4.9.1",
+    "rollup-plugin-prettier": "^4.1.1",
+    "ts-loader": "^9.5.1",
+    "tslib": "^2.6.2",
+    "typescript": "^5.3.3",
+    "webpack": "^5.89.0",
+    "webpack-cli": "^5.1.4"
   }
 }

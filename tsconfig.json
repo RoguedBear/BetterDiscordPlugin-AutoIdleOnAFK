@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "baseUrl": "src",
+    "jsx": "react",
+    "module": "es6",
+    "moduleResolution": "node",
+    "noImplicitAny": true,
+    "outDir": "./release/",
+    "target": "es5"
+  },
+  "include": ["src/**/*", "./BDPluginLibrary/src/types.ts"],
+  "extends": "@tsconfig/recommended/tsconfig.json"
+}

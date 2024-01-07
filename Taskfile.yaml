@@ -1,0 +1,26 @@
+version: "3"
+
+tasks:
+  build:
+    cmd: npm run rollup
+    sources:
+      - "src/**/*"
+      - "./*.js"
+      - "./*.mjs"
+      - "./*.json"
+  copy:
+    vars:
+      CP_CMD: cp ./release/AutoIdleOnAFK.plugin.js
+      BD_PATH: BetterDiscord/plugins
+    cmds:
+      - cmd: "{{.CP_CMD}} $APPDATA/{{.BD_PATH}}" # assumes git bash
+        platforms: [windows]
+      - platforms: [darwin]
+        cmd: "{{.CP_CMD}} $HOME/Library/Application\ Support/{{.BD_PATH}}"
+      - platforms: [linux]
+        cmd: "{{.CP_CMD}} $XDG_CONFIG_HOME/{{.BD_PATH}}"
+
+  default:
+    cmds:
+      - task: build
+      - task: copy
