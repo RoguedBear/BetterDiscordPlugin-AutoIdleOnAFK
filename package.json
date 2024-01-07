@@ -5,6 +5,7 @@
   "scripts": {
     "build": "webpack --progress --color",
     "rollup": "rollup --config",
+    "tsc": "tsc --noEmit"
   },
   "repository": {
     "type": "git",
