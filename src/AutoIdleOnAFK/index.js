@@ -21,50 +21,241 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-/**
- * @typedef {import("../../BDPluginLibrary/src/ui/ui").ContextMenu} ContextMenu
- * @typedef {import("../../BDPluginLibrary/src/ui/ui").DiscordContextMenu} DiscordContextMenu
- * @typedef {import("../../BDPluginLibrary/src/ui/ui").Modals} Modals
- * @typedef {import("../../BDPluginLibrary/src/ui/ui").Popouts} Popouts
- * @typedef {import("../../BDPluginLibrary/src/ui/ui").ErrorBoundary} ErrorBoundary
- * @typedef {import("../../BDPluginLibrary/src/ui/ui").Tooltip} Tooltip
- * @typedef {import("../../BDPluginLibrary/src/ui/ui").Toasts} Toasts
- * @typedef {import("../../BDPluginLibrary/src/ui/settings/index")} Settings
- * @typedef {import("../../BDPluginLibrary/src/modules/modules")} Modules
- * @typedef {import("../../BDPluginLibrary/src/structs/plugin.js")} Plugin
- */
-/**
- * @typedef {Modules & {
- * DiscordContextMenu: DiscordContextMenu
- * DiscordContextMenu: DCM
- * ContextMenu: ContextMenu
- * Tooltip: Tooltip
- * Toasts: Toasts
- * Settings: Settings
- * Popouts: Popouts
- * Modals: Modals
- * }} Library
- */
-/**
- * Creates the plugin class
- * @param {typeof Plugin} Plugin
- * @param {Library} Library
- * @returns {typeof globalThis.Plugin}
- */
-module.exports = (Plugin, Library) => {
-    const { Logger, DiscordModules } = Library;
-    const {
-        SelectedChannelStore: { getVoiceChannelId },
-    } = DiscordModules;
+import Settings from "./settings";
 
-    // Logger.info("VC: " + getVoiceChannelId());
+export default class AutoIdleOnAFK {
+    constructor() {
+        this._config = {
+            info: {
+                name: "AutoIdleOnAFK",
+            },
+        };
 
-    const {
-        Webpack,
-        Webpack: { Filters },
-    } = BdApi;
+        this.settings = new Settings();
 
-    const UserSettingsProtoStore = BdApi.Webpack.getModule(
+        // Some instance variables
+        this.afkTimeoutID = undefined; // timeout set by onBlur
+        this.backFromAFKTimeoutID = undefined; // timeout set by onFocus
+        // key used as a flag to detect if afk was set by the plugin or manually by user
+        this.keyIdleSetByPlugin = "IdleSetByPlugin";
+
+        this.OnBlurBounded = this.onBlurFunction.bind(this);
+        this.boundOnFocusBounded = this.onFocusFunction.bind(this);
+    }
+
+    getSettingsPanel() {
+        return this.settings.getSettingsPanel();
+    }
+
+
+    start() {
+        if (this.settings.getValue("showDebug") === true) {
+            this.log_debug(this);
+            this.log_debug("Current status: " + this.currentStatus());
+            this.log_debug("In Voice Channel: " + this.inVoiceChannel());
+            this.log_debug(
+                "onlineStatusAndNotInVC: " + this.onlineStatusAndNotInVC()
+            );
+        }
+
+        window.addEventListener("blur", this.OnBlurBounded);
+        window.addEventListener("focus", this.boundOnFocusBounded);
+    }
+
+    stop() {
+        clearTimeout(this.afkTimeoutID);
+        clearTimeout(this.backFromAFKTimeoutID);
+        window.removeEventListener("blur", this.OnBlurBounded);
+        window.removeEventListener("focus", this.boundOnFocusBounded);
+    }
+
+    onBlurFunction() {
+        this.log_debug("Focus lost from discord window");
+
+        // if user closes discord before the backToOnlineTimeout, clear the
+        // pending timeout (if it even exists)
+        this.backFromAFKTimeoutID = this.cancelTimeout(
+            this.backFromAFKTimeoutID
+        );
+
+        var __afkSetByPlugin = BdApi.loadData(
+            this._config.info.name,
+            this.keyIdleSetByPlugin
+        );
+        var inVoiceChannelAndIdleSetByPlugin =
+            this.inVoiceChannel() && __afkSetByPlugin;
+
+        var inVoiceChannelAndAlwaysOnlineEnabled =
+            this.inVoiceChannel() && this.settings.getValue("alwaysOnline");
+
+        if (this.onlineStatusAndNotInVC()) {
+            var _timeout_ms =
+                this.settings.getValue("afkTimeout") * (this.settings.getValue("showDebug") ? 2 : 60) * 1000;
+            this.log_debug("setting timeout of " + _timeout_ms + "ms");
+            this.afkTimeoutID = setTimeout(() => {
+                if (this.onlineStatusAndNotInVC()) {
+                    this.updateStatus(this.settings.getValue("afkStatus"));
+                    BdApi.saveData(
+                        this._config.info.name,
+                        this.keyIdleSetByPlugin,
+                        true
+                    );
+                }
+                // If DEBUG is enabled then keep a shorter duration than 60s
+            }, _timeout_ms); // converting min to ms
+        } else if (
+            // if the user is in a VC, idle was set by plugin &
+            // their current status == afkStatus
+            (inVoiceChannelAndIdleSetByPlugin ||
+                // OR, is user in VC and always online is enabled
+                inVoiceChannelAndAlwaysOnlineEnabled) &&
+            this.currentStatus() == this.settings.getValue("afkStatus")
+        ) {
+            this.updateStatus("online");
+            this.showToast("Changing status back to online, You are in VC");
+            BdApi.saveData(
+                this._config.info.name,
+                this.keyIdleSetByPlugin,
+                false
+            );
+        }
+    }
+
+    onFocusFunction() {
+        this.log_debug("Discord window in focus now");
+
+        // if user opens discord before the afkTimeout, clear the pending
+        // timeout (if it even exists)
+        this.afkTimeoutID = this.cancelTimeout(this.afkTimeoutID);
+
+        this.log_debug(
+            "Setting timeout of " +
+            this.settings.getValue("backToOnlineDelay") * 1000 +
+            " ms"
+        );
+        this.backFromAFKTimeoutID = setTimeout(() => {
+            // TODO: Refactor/comment out/test more this part
+            var __afkSetByPlugin = BdApi.loadData(
+                this._config.info.name,
+                this.keyIdleSetByPlugin
+            );
+            var statusIsAFKAndWasSetByPlugin =
+                this.currentStatus() === this.settings.getValue("afkStatus") &&
+                __afkSetByPlugin === true;
+
+            var statusIsAFKAndAlwaysOnlineIsTrue =
+                this.currentStatus() === this.settings.getValue("afkStatus") &&
+                this.settings.getValue("alwaysOnline") === true;
+
+            if (statusIsAFKAndWasSetByPlugin) {
+                this.showToast("Changing status back to online");
+                this.updateStatus("online");
+                BdApi.saveData(
+                    this._config.info.name,
+                    this.keyIdleSetByPlugin,
+                    false
+                );
+            } else if (statusIsAFKAndAlwaysOnlineIsTrue) {
+                BdApi.showToast("Changing status back to online");
+                this.updateStatus("online");
+                BdApi.saveData(
+                    this._config.info.name,
+                    this.keyIdleSetByPlugin,
+                    false
+                );
+            } else if (__afkSetByPlugin == undefined) {
+                return;
+            } else {
+                BdApi.deleteData(
+                    this._config.info.name,
+                    this.keyIdleSetByPlugin
+                );
+                this.log_debug(
+                    "User overrode the status. leaving status unchanged..."
+                );
+            }
+        }, this.settings.getValue("backToOnlineDelay") * 1000);
+    }
+
+    /**
+     * Cancles the given timeout id
+     * @param {number} timeoutId
+     * @returns {undefined}
+     */
+    cancelTimeout(timeoutId) {
+        if (timeoutId != undefined) {
+            this.log_debug("Cancelling timeout " + timeoutId);
+            clearTimeout(timeoutId);
+            return undefined;
+        }
+    }
+
+    /**
+     * @returns {string} the current user status
+     */
+    currentStatus() {
+        return this.UserSettingsProtoStore.settings.status.status.value;
+    }
+    /**
+     * @returns {boolean} if user is in a VC
+     */
+    inVoiceChannel() {
+        return (
+            this.settings.getValue("ignoreVCState") === false &&
+            this.getVoiceChannelId() !== null
+        );
+    }
+
+    /**
+     * Returns if the current status is 'online' and the user is not in a
+     * voice channel
+     * @returns
+     */
+    onlineStatusAndNotInVC() {
+        return (
+            this.currentStatus() === "online" &&
+            this.inVoiceChannel() === false
+        );
+    }
+
+    /**
+     * Updates the remote status to the param `toStatus`
+     * @param {('online'|'idle'|'invisible'|'dnd')} toStatus
+     */
+    updateStatus(toStatus) {
+        if (
+            this._config.DEBUG === true &&
+            this._config.DEBUG_ActuallyChangeStatus === false
+        ) {
+            this.log_debug("Changing (but not changing) status to: " + toStatus);
+            return;
+        }
+        this.log_debug("Actually changing status to: " + toStatus);
+        this.UserSettingsProtoUtils.updateAsync(
+            "status",
+            (statusSetting) => {
+                this.log_debug(statusSetting);
+                statusSetting.status.value = toStatus;
+            },
+            0
+        );
+    }
+
+    /**
+     * shows toast message based on showToast settings
+     * @param {string} msg
+     */
+    showToast(msg) {
+        if (this.settings.getValue("showToasts")) {
+            BdApi.showToast(msg);
+        }
+    }
+
+    getVoiceChannelId() {
+        return BdApi.Webpack.getByKeys("getLastSelectedChannelId").getVoiceChannelId() || null;
+    }
+
+    UserSettingsProtoStore = BdApi.Webpack.getModule(
         (m) =>
             m &&
             typeof m.getName == "function" &&
@@ -73,243 +264,19 @@ module.exports = (Plugin, Library) => {
         { first: true, searchExports: true }
     );
 
-    const UserSettingsProtoUtils = BdApi.Webpack.getModule(
+    UserSettingsProtoUtils = BdApi.Webpack.getModule(
         (m) =>
             m.ProtoClass &&
             m.ProtoClass.typeName.endsWith(".PreloadedUserSettings"),
         { first: true, searchExports: true }
     );
 
-    var DEBUG = false;
-    function log_debug(module, ...message) {
-        if (DEBUG !== true) {
+
+    log_debug(module, ...message) {
+        if (this.settings.getValue("showDebug") !== true) {
             return;
         } else {
-            Logger.debug(module, ...message);
+            console.log(module, ...message);
         }
     }
-
-    return class AutoIdleOnAFK extends Plugin {
-        constructor() {
-            super();
-
-            this.getSettingsPanel = () => {
-                return this.buildSettingsPanel().getElement();
-            };
-
-            // Some instance variables
-            this.afkTimeoutID = undefined; // timeout set by onBlur
-            this.backFromAFKTimeoutID = undefined; // timeout set by onFocus
-            // key used as a flag to detect if afk was set by the plugin or manually by user
-            this.keyIdleSetByPlugin = "IdleSetByPlugin";
-
-            this.OnBlurBounded = this.onBlurFunction.bind(this);
-            this.boundOnFocusBounded = this.onFocusFunction.bind(this);
-        }
-
-        onStart() {
-            if (this._config.DEBUG === true) {
-                DEBUG = true;
-                log_debug(this);
-                log_debug("Current status: " + this.currentStatus());
-                log_debug("In Voice Channel: " + this.inVoiceChannel());
-                log_debug(
-                    "onlineStatusAndNotInVC: " + this.onlineStatusAndNotInVC()
-                );
-            }
-            window.addEventListener("blur", this.OnBlurBounded);
-            window.addEventListener("focus", this.boundOnFocusBounded);
-        }
-
-        onStop() {
-            clearTimeout(this.afkTimeoutID);
-            clearTimeout(this.backFromAFKTimeoutID);
-            window.removeEventListener("blur", this.OnBlurBounded);
-            window.removeEventListener("focus", this.boundOnFocusBounded);
-        }
-
-        onBlurFunction() {
-            // TODO: remove this
-            log_debug("Focus lost from discord window");
-
-            // if user closes discord before the backToOnlineTimeout, clear the
-            // pending timeout (if it even exists)
-            this.backFromAFKTimeoutID = this.cancelTimeout(
-                this.backFromAFKTimeoutID
-            );
-
-            var __afkSetByPlugin = BdApi.loadData(
-                this._config.info.name,
-                this.keyIdleSetByPlugin
-            );
-            var inVoiceChannelAndIdleSetByPlugin =
-                this.inVoiceChannel() && __afkSetByPlugin;
-
-            var inVoiceChannelAndAlwaysOnlineEnabled =
-                this.inVoiceChannel() && this.settings.alwaysOnline;
-
-            if (this.onlineStatusAndNotInVC()) {
-                var _timeout_ms =
-                    this.settings.afkTimeout * (DEBUG ? 2 : 60) * 1000;
-                log_debug("setting timeout of " + _timeout_ms + "ms");
-                this.afkTimeoutID = setTimeout(() => {
-                    if (this.onlineStatusAndNotInVC()) {
-                        this.updateStatus(this.settings.afkStatus);
-                        BdApi.saveData(
-                            this._config.info.name,
-                            this.keyIdleSetByPlugin,
-                            true
-                        );
-                    }
-                    // If DEBUG is enabled then keep a shorter duration than 60s
-                }, _timeout_ms); // converting min to ms
-            } else if (
-                // if the user is in a VC, idle was set by plugin &
-                // their current status == afkStatus
-                (inVoiceChannelAndIdleSetByPlugin ||
-                    // OR, is user in VC and always online is enabled
-                    inVoiceChannelAndAlwaysOnlineEnabled) &&
-                this.currentStatus() == this.settings.afkStatus
-            ) {
-                this.updateStatus("online");
-                this.showToast("Changing status back to online, You are in VC");
-                BdApi.saveData(
-                    this._config.info.name,
-                    this.keyIdleSetByPlugin,
-                    false
-                );
-            }
-        }
-
-        onFocusFunction() {
-            // TODO: remove this
-            log_debug("Discord window in focus now");
-
-            // if user opens discord before the afkTimeout, clear the pending
-            // timeout (if it even exists)
-            this.afkTimeoutID = this.cancelTimeout(this.afkTimeoutID);
-
-            log_debug(
-                "Setting timeout of " +
-                    this.settings.backToOnlineDelay * 1000 +
-                    " ms"
-            );
-            this.backFromAFKTimeoutID = setTimeout(() => {
-                // TODO: Refactor/comment out/test more this part
-                var __afkSetByPlugin = BdApi.loadData(
-                    this._config.info.name,
-                    this.keyIdleSetByPlugin
-                );
-                var statusIsAFKAndWasSetByPlugin =
-                    this.currentStatus() === this.settings.afkStatus &&
-                    __afkSetByPlugin === true;
-
-                var statusIsAFKAndAlwaysOnlineIsTrue =
-                    this.currentStatus() === this.settings.afkStatus &&
-                    this.settings.alwaysOnline === true;
-
-                if (statusIsAFKAndWasSetByPlugin) {
-                    this.showToast("Changing status back to online");
-                    this.updateStatus("online");
-                    BdApi.saveData(
-                        this._config.info.name,
-                        this.keyIdleSetByPlugin,
-                        false
-                    );
-                } else if (statusIsAFKAndAlwaysOnlineIsTrue) {
-                    BdApi.showToast("Changing status back to online");
-                    this.updateStatus("online");
-                    BdApi.saveData(
-                        this._config.info.name,
-                        this.keyIdleSetByPlugin,
-                        false
-                    );
-                } else if (__afkSetByPlugin == undefined) {
-                    return;
-                } else {
-                    BdApi.deleteData(
-                        this._config.info.name,
-                        this.keyIdleSetByPlugin
-                    );
-                    Logger.info(
-                        "User overrode the status. leaving status unchanged..."
-                    );
-                }
-            }, this.settings.backToOnlineDelay * 1000);
-        }
-
-        /**
-         * Cancles the given timeout id
-         * @param {number} timeoutId
-         * @returns {undefined}
-         */
-        cancelTimeout(timeoutId) {
-            if (timeoutId != undefined) {
-                log_debug("Cancelling timeout " + timeoutId); // TODO: remove this
-                clearTimeout(timeoutId);
-                return undefined;
-            }
-        }
-
-        /**
-         * @returns {string} the current user status
-         */
-        currentStatus() {
-            return UserSettingsProtoStore.settings.status.status.value;
-        }
-        /**
-         * @returns {boolean} if user is in a VC
-         */
-        inVoiceChannel() {
-            return (
-                this.settings.ignoreVCState === false &&
-                getVoiceChannelId() !== null
-            );
-        }
-
-        /**
-         * Returns if the current status is 'online' and the user is not in a
-         * voice channel
-         * @returns
-         */
-        onlineStatusAndNotInVC() {
-            return (
-                this.currentStatus() === "online" &&
-                this.inVoiceChannel() === false
-            );
-        }
-
-        /**
-         * Updates the remote status to the param `toStatus`
-         * @param {('online'|'idle'|'invisible'|'dnd')} toStatus
-         */
-        updateStatus(toStatus) {
-            if (
-                this._config.DEBUG === true &&
-                this._config.DEBUG_ActuallyChangeStatus === false
-            ) {
-                log_debug("Changing (but not changing) status to: " + toStatus);
-                return;
-            }
-            log_debug("Actually changing status to: " + toStatus);
-            UserSettingsProtoUtils.updateAsync(
-                "status",
-                (statusSetting) => {
-                    log_debug(statusSetting);
-                    statusSetting.status.value = toStatus;
-                },
-                0
-            );
-        }
-
-        /**
-         * shows toast message based on showToast settings
-         * @param {string} msg
-         */
-        showToast(msg) {
-            if (this.settings.showToasts) {
-                BdApi.showToast(msg);
-            }
-        }
-    };
 };
