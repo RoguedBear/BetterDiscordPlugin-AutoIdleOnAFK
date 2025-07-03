@@ -120,7 +120,9 @@ export default class Settings {
                 const setting = this.settings.settings.find((s) => s.id === id);
                 if (setting) {
                     setting.value = value;
-                    BdApi.saveData("AutoIdleOnAFK", "settings", this.settings);
+                    BdApi.saveData("AutoIdleOnAFK", "settings", {
+                        settings: this.settings.settings,
+                    });
                 }
             },
         });
