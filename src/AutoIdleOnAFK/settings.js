@@ -1,11 +1,13 @@
 const defaults = {
     changelog: [
         {
-            type: "added",
-            title: "Added a setting to optionally ignore VC state when going AFK",
+            type: "fixed",
+            title: "Fixed Settings Page & Plugin Refactor!",
             items: [
-                "Earlier if you were in a VC you couldn't go in AFK mode. Now you can toggle a setting to ignore whether you are in VC or not before going AFK.",
-                "default value: off",
+                "It's been a _longgg_ while since this plugin has received any update\nI've been busy with life. :)",
+                "This update fixes the settings panel, which broke a month or so back",
+                "In doing so, plugin was refactored to remove the  dependency on `ZeresPluginLibrary` keeping up with the new way to write BD plugins.",
+                "**A \\*HUGE\\*** credit goes to **opdude** (GitHub & Discord) for their time and effort in this refactor and the fixes!",
             ],
         },
     ],

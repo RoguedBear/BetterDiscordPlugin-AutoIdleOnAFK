@@ -42,12 +42,13 @@ export default class AutoIdleOnAFK {
 
     SelectedChannelStore = BdApi.Webpack.getByKeys("getLastSelectedChannelId");
 
-    constructor() {
+    constructor(meta) {
         this._config = {
             info: {
                 name: "AutoIdleOnAFK",
             },
         };
+        this.meta = meta;
 
         this.settings = new Settings();
 
@@ -77,6 +78,7 @@ export default class AutoIdleOnAFK {
 
         window.addEventListener("blur", this.OnBlurBounded);
         window.addEventListener("focus", this.boundOnFocusBounded);
+        this.showChangelog();
     }
 
     stop() {
@@ -282,5 +284,28 @@ export default class AutoIdleOnAFK {
         } else {
             console.log(module, ...message);
         }
+    }
+
+    showChangelog() {
+        const currentVersionInfo = BdApi.loadData(
+            this._config.info.name,
+            "currentVersionInfo"
+        );
+        this.log_debug("curent version", currentVersionInfo);
+        if (
+            currentVersionInfo &&
+            currentVersionInfo.version &&
+            currentVersionInfo.version === this.meta.version
+        ) {
+            return;
+        }
+        BdApi.UI.showChangelogModal({
+            title: this.meta.name,
+            subtitle: "version " + this.meta.version,
+            changes: this.settings.settings.changelog,
+        });
+        BdApi.saveData(this._config.info.name, "currentVersionInfo", {
+            version: this.meta.version,
+        });
     }
 }
