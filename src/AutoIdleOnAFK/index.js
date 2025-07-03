@@ -291,7 +291,6 @@ export default class AutoIdleOnAFK {
             this._config.info.name,
             "currentVersionInfo"
         );
-        this.log_debug("curent version", currentVersionInfo);
         if (
             currentVersionInfo &&
             currentVersionInfo.version &&
