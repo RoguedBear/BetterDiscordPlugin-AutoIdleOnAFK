@@ -1,4 +1,0 @@
-[submodule "BDPluginLibrary"]
-	path = BDPluginLibrary
-	url = https://github.com/rauenzi/BDPluginLibrary.git
-	branch = master

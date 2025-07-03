@@ -1,10 +1,3 @@
-> [!WARNING]
-> ⚠️⚠️⚠️
-> 
-> The plugin is currently broken as the settings page is not rendering properly. Please wait for a fix to be implemented
-> 
-> More information available at: https://github.com/RoguedBear/BetterDiscordPlugin-AutoIdleOnAFK/issues/58#issuecomment-2924635109
-
 # AutoIdleOnAFK ![](https://github.com/RoguedBear/BetterDiscordPlugin-AutoIdleOnAFK/blob/main/readme_assets/idle.svg?raw=true)
 
 > Automatically updates your discord status to 'idle' when you haven't opened
@@ -59,7 +52,7 @@ reference from the following plugins:
 ```
 MIT License
 
-Copyright (c) 2022 RoguedBear
+Copyright (c) 2022-2025 RoguedBear
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
