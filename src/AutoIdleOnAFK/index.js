@@ -40,7 +40,7 @@ export default class AutoIdleOnAFK {
         { first: true, searchExports: true },
     );
 
-    VoiceChannelModule = BdApi.Webpack.getByKeys("getLastSelectedChannelId");
+    SelectedChannelStore = BdApi.Webpack.getByKeys("getLastSelectedChannelId");
 
     constructor() {
         this._config = {
@@ -226,7 +226,7 @@ export default class AutoIdleOnAFK {
     inVoiceChannel() {
         return (
             this.settings.getValue("ignoreVCState") === false &&
-            this.VoiceChannelModule.getVoiceChannelId() !== null
+            this.SelectedChannelStore.getVoiceChannelId() !== null
         );
     }
 
