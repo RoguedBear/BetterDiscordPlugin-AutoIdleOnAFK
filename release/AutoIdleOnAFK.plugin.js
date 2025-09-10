@@ -119,7 +119,7 @@ const defaults = {
 class Settings {
     constructor() {
         const settings = defaults;
-        const storedData = BdApi.loadData("AutoIdleOnAFK", "settings") || {};
+        const storedData = BdApi.Data.load("AutoIdleOnAFK", "settings") || {};
         settings.settings.forEach((setting) => {
             const storedSetting = (storedData.settings || []).find(
                 (s) => s.id === setting.id,
@@ -147,7 +147,7 @@ class Settings {
                 const setting = this.settings.settings.find((s) => s.id === id);
                 if (setting) {
                     setting.value = value;
-                    BdApi.saveData("AutoIdleOnAFK", "settings", {
+                    BdApi.Data.save("AutoIdleOnAFK", "settings", {
                         settings: this.settings.settings,
                     });
                 }
@@ -325,7 +325,7 @@ class AutoIdleOnAFK {
             this.backFromAFKTimeoutID,
         );
 
-        var __afkSetByPlugin = BdApi.loadData(
+        var __afkSetByPlugin = BdApi.Data.load(
             this._config.info.name,
             this.keyIdleSetByPlugin,
         );
@@ -344,7 +344,7 @@ class AutoIdleOnAFK {
             this.afkTimeoutID = setTimeout(() => {
                 if (this.onlineStatusAndNotInVC()) {
                     this.updateStatus(this.settings.getValue("afkStatus"));
-                    BdApi.saveData(
+                    BdApi.Data.save(
                         this._config.info.name,
                         this.keyIdleSetByPlugin,
                         true,
@@ -362,7 +362,7 @@ class AutoIdleOnAFK {
         ) {
             this.updateStatus("online");
             this.showToast("Changing status back to online, You are in VC");
-            BdApi.saveData(
+            BdApi.Data.save(
                 this._config.info.name,
                 this.keyIdleSetByPlugin,
                 false,
@@ -385,7 +385,7 @@ class AutoIdleOnAFK {
         this.backFromAFKTimeoutID = setTimeout(
             () => {
                 // TODO: Refactor/comment out/test more this part
-                var __afkSetByPlugin = BdApi.loadData(
+                var __afkSetByPlugin = BdApi.Data.load(
                     this._config.info.name,
                     this.keyIdleSetByPlugin,
                 );
@@ -402,7 +402,7 @@ class AutoIdleOnAFK {
                 if (statusIsAFKAndWasSetByPlugin) {
                     this.showToast("Changing status back to online");
                     this.updateStatus("online");
-                    BdApi.saveData(
+                    BdApi.Data.save(
                         this._config.info.name,
                         this.keyIdleSetByPlugin,
                         false,
@@ -410,7 +410,7 @@ class AutoIdleOnAFK {
                 } else if (statusIsAFKAndAlwaysOnlineIsTrue) {
                     BdApi.showToast("Changing status back to online");
                     this.updateStatus("online");
-                    BdApi.saveData(
+                    BdApi.Data.save(
                         this._config.info.name,
                         this.keyIdleSetByPlugin,
                         false,
@@ -418,7 +418,7 @@ class AutoIdleOnAFK {
                 } else if (__afkSetByPlugin == undefined) {
                     return;
                 } else {
-                    BdApi.deleteData(
+                    BdApi.Data.delete(
                         this._config.info.name,
                         this.keyIdleSetByPlugin,
                     );
@@ -502,7 +502,7 @@ class AutoIdleOnAFK {
      */
     showToast(msg) {
         if (this.settings.getValue("showToasts")) {
-            BdApi.showToast(msg);
+            BdApi.UI.showToast(msg);
         }
     }
 
@@ -515,7 +515,7 @@ class AutoIdleOnAFK {
     }
 
     showChangelog() {
-        const currentVersionInfo = BdApi.loadData(
+        const currentVersionInfo = BdApi.Data.load(
             this._config.info.name,
             "currentVersionInfo"
         );
@@ -531,7 +531,7 @@ class AutoIdleOnAFK {
             subtitle: "version " + this.meta.version,
             changes: this.settings.settings.changelog,
         });
-        BdApi.saveData(this._config.info.name, "currentVersionInfo", {
+        BdApi.Data.save(this._config.info.name, "currentVersionInfo", {
             version: this.meta.version,
         });
     }
