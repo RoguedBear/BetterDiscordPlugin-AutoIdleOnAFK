@@ -94,7 +94,7 @@ const defaults = {
 export default class Settings {
     constructor() {
         const settings = defaults;
-        const storedData = BdApi.loadData("AutoIdleOnAFK", "settings") || {};
+        const storedData = BdApi.Data.load("AutoIdleOnAFK", "settings") || {};
         settings.settings.forEach((setting) => {
             const storedSetting = (storedData.settings || []).find(
                 (s) => s.id === setting.id,
@@ -122,7 +122,7 @@ export default class Settings {
                 const setting = this.settings.settings.find((s) => s.id === id);
                 if (setting) {
                     setting.value = value;
-                    BdApi.saveData("AutoIdleOnAFK", "settings", {
+                    BdApi.Data.save("AutoIdleOnAFK", "settings", {
                         settings: this.settings.settings,
                     });
                 }
