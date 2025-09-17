@@ -97,7 +97,7 @@ export default class AutoIdleOnAFK {
             this.backFromAFKTimeoutID,
         );
 
-        var __afkSetByPlugin = BdApi.loadData(
+        var __afkSetByPlugin = BdApi.Data.load(
             this._config.info.name,
             this.keyIdleSetByPlugin,
         );
@@ -116,7 +116,7 @@ export default class AutoIdleOnAFK {
             this.afkTimeoutID = setTimeout(() => {
                 if (this.onlineStatusAndNotInVC()) {
                     this.updateStatus(this.settings.getValue("afkStatus"));
-                    BdApi.saveData(
+                    BdApi.Data.save(
                         this._config.info.name,
                         this.keyIdleSetByPlugin,
                         true,
@@ -134,7 +134,7 @@ export default class AutoIdleOnAFK {
         ) {
             this.updateStatus("online");
             this.showToast("Changing status back to online, You are in VC");
-            BdApi.saveData(
+            BdApi.Data.save(
                 this._config.info.name,
                 this.keyIdleSetByPlugin,
                 false,
@@ -157,7 +157,7 @@ export default class AutoIdleOnAFK {
         this.backFromAFKTimeoutID = setTimeout(
             () => {
                 // TODO: Refactor/comment out/test more this part
-                var __afkSetByPlugin = BdApi.loadData(
+                var __afkSetByPlugin = BdApi.Data.load(
                     this._config.info.name,
                     this.keyIdleSetByPlugin,
                 );
@@ -174,7 +174,7 @@ export default class AutoIdleOnAFK {
                 if (statusIsAFKAndWasSetByPlugin) {
                     this.showToast("Changing status back to online");
                     this.updateStatus("online");
-                    BdApi.saveData(
+                    BdApi.Data.save(
                         this._config.info.name,
                         this.keyIdleSetByPlugin,
                         false,
@@ -182,7 +182,7 @@ export default class AutoIdleOnAFK {
                 } else if (statusIsAFKAndAlwaysOnlineIsTrue) {
                     BdApi.showToast("Changing status back to online");
                     this.updateStatus("online");
-                    BdApi.saveData(
+                    BdApi.Data.save(
                         this._config.info.name,
                         this.keyIdleSetByPlugin,
                         false,
@@ -190,7 +190,7 @@ export default class AutoIdleOnAFK {
                 } else if (__afkSetByPlugin == undefined) {
                     return;
                 } else {
-                    BdApi.deleteData(
+                    BdApi.Data.delete(
                         this._config.info.name,
                         this.keyIdleSetByPlugin,
                     );
@@ -287,7 +287,7 @@ export default class AutoIdleOnAFK {
     }
 
     showChangelog() {
-        const currentVersionInfo = BdApi.loadData(
+        const currentVersionInfo = BdApi.Data.load(
             this._config.info.name,
             "currentVersionInfo"
         );
@@ -303,7 +303,7 @@ export default class AutoIdleOnAFK {
             subtitle: "version " + this.meta.version,
             changes: this.settings.settings.changelog,
         });
-        BdApi.saveData(this._config.info.name, "currentVersionInfo", {
+        BdApi.Data.save(this._config.info.name, "currentVersionInfo", {
             version: this.meta.version,
         });
     }
