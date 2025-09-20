@@ -30,14 +30,20 @@ export default class AutoIdleOnAFK {
             typeof m.getName == "function" &&
             m.getName() == "UserSettingsProtoStore" &&
             m,
-        { first: true, searchExports: true },
+        {
+            first: true,
+            searchExports: true,
+        },
     );
 
     UserSettingsProtoUtils = BdApi.Webpack.getModule(
         (m) =>
             m.ProtoClass &&
             m.ProtoClass.typeName.endsWith(".PreloadedUserSettings"),
-        { first: true, searchExports: true },
+        {
+            first: true,
+            searchExports: true,
+        },
     );
 
     SelectedChannelStore = BdApi.Webpack.getByKeys("getLastSelectedChannelId");
@@ -154,33 +160,30 @@ export default class AutoIdleOnAFK {
                 this.settings.getValue("backToOnlineDelay") * 1000 +
                 " ms",
         );
-        this.backFromAFKTimeoutID = setTimeout(
-            () => {
-                // TODO: Refactor/comment out/test more this part
-                var __afkSetByPlugin = BdApi.Data.load(
+        this.backFromAFKTimeoutID = setTimeout(() => {
+            // TODO: Refactor/comment out/test more this part
+            var __afkSetByPlugin = BdApi.Data.load(
+                this._config.info.name,
+                this.keyIdleSetByPlugin,
+            );
+            var statusIsAFKAndWasSetByPlugin =
+                this.currentStatus() === this.settings.getValue("afkStatus") &&
+                __afkSetByPlugin === true;
+
+            var statusIsAFKAndAlwaysOnlineIsTrue =
+                this.currentStatus() === this.settings.getValue("afkStatus") &&
+                this.settings.getValue("alwaysOnline") === true;
+
+            if (statusIsAFKAndWasSetByPlugin) {
+                this.showToast("Changing status back to online");
+                this.updateStatus("online");
+                BdApi.Data.save(
                     this._config.info.name,
                     this.keyIdleSetByPlugin,
+                    false,
                 );
-                var statusIsAFKAndWasSetByPlugin =
-                    this.currentStatus() ===
-                        this.settings.getValue("afkStatus") &&
-                    __afkSetByPlugin === true;
-
-                var statusIsAFKAndAlwaysOnlineIsTrue =
-                    this.currentStatus() ===
-                        this.settings.getValue("afkStatus") &&
-                    this.settings.getValue("alwaysOnline") === true;
-
-                if (statusIsAFKAndWasSetByPlugin) {
-                    this.showToast("Changing status back to online");
-                    this.updateStatus("online");
-                    BdApi.Data.save(
-                        this._config.info.name,
-                        this.keyIdleSetByPlugin,
-                        false,
-                    );
-                } else if (statusIsAFKAndAlwaysOnlineIsTrue) {
-                     /**
+            } else if (statusIsAFKAndAlwaysOnlineIsTrue) {
+                /**
                      * Note: Using BdApi.UI.showToast() directly instead of
                      * this.showToast()
                      *
@@ -191,27 +194,25 @@ export default class AutoIdleOnAFK {
                      * preference
 
                     */
-                    BdApi.UI.showToast("Changing status back to online");
-                    this.updateStatus("online");
-                    BdApi.Data.save(
-                        this._config.info.name,
-                        this.keyIdleSetByPlugin,
-                        false,
-                    );
-                } else if (__afkSetByPlugin == undefined) {
-                    return;
-                } else {
-                    BdApi.Data.delete(
-                        this._config.info.name,
-                        this.keyIdleSetByPlugin,
-                    );
-                    this.log_debug(
-                        "User overrode the status. leaving status unchanged...",
-                    );
-                }
-            },
-            this.settings.getValue("backToOnlineDelay") * 1000,
-        );
+                BdApi.UI.showToast("Changing status back to online");
+                this.updateStatus("online");
+                BdApi.Data.save(
+                    this._config.info.name,
+                    this.keyIdleSetByPlugin,
+                    false,
+                );
+            } else if (__afkSetByPlugin == undefined) {
+                return;
+            } else {
+                BdApi.Data.delete(
+                    this._config.info.name,
+                    this.keyIdleSetByPlugin,
+                );
+                this.log_debug(
+                    "User overrode the status. leaving status unchanged...",
+                );
+            }
+        }, this.settings.getValue("backToOnlineDelay") * 1000);
     }
 
     /**
@@ -300,7 +301,7 @@ export default class AutoIdleOnAFK {
     showChangelog() {
         const currentVersionInfo = BdApi.Data.load(
             this._config.info.name,
-            "currentVersionInfo"
+            "currentVersionInfo",
         );
         if (
             currentVersionInfo &&
