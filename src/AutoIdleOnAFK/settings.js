@@ -2,7 +2,15 @@ const defaults = {
     changelog: [
         {
             type: "fixed",
-            title: "Fixed Settings Page & Plugin Refactor!",
+            title: "(v0.5.1) Updated Deprecated Methods",
+            items: [
+                "just a small update which updates the functions that have been deprecated in BD Api to newer ones",
+                "Credits to **MsNecromancer** (GitHub & Discord) for her time and efforts spent for this `:)`",
+            ],
+        },
+        {
+            type: "fixed",
+            title: "(v0.5.0) Fixed Settings Page & Plugin Refactor!",
             items: [
                 "It's been a _longgg_ while since this plugin has received any update\nI've been busy with life. :)",
                 "This update fixes the settings panel, which broke a month or so back",
