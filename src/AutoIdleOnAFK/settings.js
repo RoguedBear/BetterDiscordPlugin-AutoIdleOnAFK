@@ -5,7 +5,7 @@ const defaults = {
             title: "(v0.5.1) Updated Deprecated Methods",
             items: [
                 "just a small update which updates the functions that have been deprecated in BD Api to newer ones",
-                "Credits to **MsNecromancer** (GitHub & Discord) for her time and efforts spent for this `:)`",
+                "Credits to **MsNecromancer** (GitHub & Discord) for her time and efforts spent on this `:)`",
             ],
         },
         {
