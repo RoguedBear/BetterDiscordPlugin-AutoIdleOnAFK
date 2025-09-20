@@ -180,7 +180,18 @@ export default class AutoIdleOnAFK {
                         false,
                     );
                 } else if (statusIsAFKAndAlwaysOnlineIsTrue) {
-                    BdApi.showToast("Changing status back to online");
+                     /**
+                     * Note: Using BdApi.UI.showToast() directly instead of
+                     * this.showToast()
+                     *
+                     * The showToast() method only displays messages if the user has
+                     * enabled the "Show toast messages" setting. However, when the
+                     * plugin changes the user's status from idle back to online, I
+                     * believe we should notify the user regardless of their toast
+                     * preference
+
+                    */
+                    BdApi.UI.showToast("Changing status back to online");
                     this.updateStatus("online");
                     BdApi.Data.save(
                         this._config.info.name,
@@ -274,7 +285,7 @@ export default class AutoIdleOnAFK {
      */
     showToast(msg) {
         if (this.settings.getValue("showToasts")) {
-            BdApi.showToast(msg);
+            BdApi.UI.showToast(msg);
         }
     }
 
