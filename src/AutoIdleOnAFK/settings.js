@@ -2,7 +2,15 @@ const defaults = {
     changelog: [
         {
             type: "fixed",
-            title: "Fixed Settings Page & Plugin Refactor!",
+            title: "(v0.5.1) Updated Deprecated Methods",
+            items: [
+                "just a small update which updates the functions that have been deprecated in BD Api to newer ones",
+                "Credits to **MsNecromancer** (GitHub & Discord) for her time and efforts spent on this `:)`",
+            ],
+        },
+        {
+            type: "fixed",
+            title: "(v0.5.0) Fixed Settings Page & Plugin Refactor!",
             items: [
                 "It's been a _longgg_ while since this plugin has received any update\nI've been busy with life. :)",
                 "This update fixes the settings panel, which broke a month or so back",
@@ -94,7 +102,7 @@ const defaults = {
 export default class Settings {
     constructor() {
         const settings = defaults;
-        const storedData = BdApi.loadData("AutoIdleOnAFK", "settings") || {};
+        const storedData = BdApi.Data.load("AutoIdleOnAFK", "settings") || {};
         settings.settings.forEach((setting) => {
             const storedSetting = (storedData.settings || []).find(
                 (s) => s.id === setting.id,
@@ -122,7 +130,7 @@ export default class Settings {
                 const setting = this.settings.settings.find((s) => s.id === id);
                 if (setting) {
                     setting.value = value;
-                    BdApi.saveData("AutoIdleOnAFK", "settings", {
+                    BdApi.Data.save("AutoIdleOnAFK", "settings", {
                         settings: this.settings.settings,
                     });
                 }
